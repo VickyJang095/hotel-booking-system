@@ -20,6 +20,8 @@
 
 @include('home.testimonials')
 
+@include('auth.modal')
+
 @endsection
 
 <style>
