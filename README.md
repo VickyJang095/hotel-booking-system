@@ -1,62 +1,130 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏨 Tripto — Hotel Booking System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> Đồ án cơ sở — Trường Đại học Phenikaa
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Giới thiệu
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Tripto** là hệ thống đặt phòng khách sạn trực tuyến được xây dựng trong khuôn khổ môn **Đồ án cơ sở** tại Trường Đại học Phenikaa. Dự án mô phỏng các chức năng cốt lõi của một nền tảng đặt phòng thực tế, bao gồm xác thực người dùng, tìm kiếm và đặt phòng, quản lý đặt chỗ, và giao diện quản trị.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Tính năng chính
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Xác thực người dùng** — Đăng nhập / đăng ký qua OTP gửi email
+- **Tìm kiếm khách sạn** — Lọc theo địa điểm, ngày nhận/trả phòng, số khách
+- **Chi tiết khách sạn** — Xem ảnh, mô tả, tiện ích, đánh giá
+- **Đặt phòng** — Chọn phòng, xác nhận và thanh toán
+- **Quản lý tài khoản** — Hồ sơ cá nhân, lịch sử chuyến đi, danh sách yêu thích
+- **Đánh giá** — Viết và xem đánh giá khách sạn
+- **Quản trị (Admin)** — Quản lý khách sạn, đặt phòng, người dùng
+- **Hotel Owner** — Giao diện dành cho chủ khách sạn quản lý tài sản
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Công nghệ sử dụng
 
-## Laravel Sponsors
+| Thành phần | Công nghệ |
+|---|---|
+| Backend | Laravel (PHP) |
+| Frontend | Blade Template, Tailwind CSS |
+| Database | MySQL |
+| Authentication | OTP qua Email (Mailtrap) |
+| Version Control | Git / GitHub |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ⚙️ Cài đặt và chạy dự án
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Yêu cầu hệ thống
 
-## Contributing
+- PHP >= 8.1
+- Composer
+- Node.js & npm
+- MySQL
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Các bước cài đặt
 
-## Code of Conduct
+```bash
+# 1. Clone repository
+git clone https://github.com/VickyJang095/hotel-booking-system.git
+cd hotel-booking-system
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 2. Cài đặt dependencies PHP
+composer install
 
-## Security Vulnerabilities
+# 3. Cài đặt dependencies JavaScript
+npm install && npm run build
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 4. Tạo file môi trường
+cp .env.example .env
+php artisan key:generate
 
-## License
+# 5. Cấu hình database trong file .env
+DB_DATABASE=hotel_booking
+DB_USERNAME=root
+DB_PASSWORD=
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-"# hotel-booking-system" 
+# 6. Cấu hình mail (OTP) trong file .env
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+
+# 7. Chạy migration và seeder
+php artisan migrate --seed
+
+# 8. Khởi động server
+php artisan serve
+```
+
+Truy cập tại: `http://localhost:8000`
+
+---
+
+## 📁 Cấu trúc thư mục
+
+```
+hotel-booking-system/
+├── app/
+│   ├── Http/Controllers/     # Controllers xử lý logic
+│   ├── Models/               # Eloquent Models
+│   └── Mail/                 # Mailable classes (OTP email)
+├── database/
+│   ├── migrations/           # Cấu trúc bảng CSDL
+│   └── seeders/              # Dữ liệu mẫu
+├── resources/
+│   ├── views/                # Blade templates
+│   └── css/, js/             # Assets frontend
+├── routes/
+│   └── web.php               # Định nghĩa routes
+└── public/                   # Entry point
+```
+
+---
+
+## 👥 Nhóm thực hiện
+
+| Họ và tên | Mã sinh viên | Vai trò |
+|---|---|---|
+|  |  |  |
+|  |  |  |
+|  |  |  |
+
+> *(Điền thông tin thành viên nhóm vào bảng trên)*
+
+---
+
+## 🏫 Thông tin môn học
+
+- **Môn học:** Đồ án cơ sở
+- **Trường:** Đại học Phenikaa
+- **Năm học:** 2024 – 2025
+
+---
+
+## 📄 Giấy phép
+
+Dự án được thực hiện cho mục đích học thuật tại Trường Đại học Phenikaa.
