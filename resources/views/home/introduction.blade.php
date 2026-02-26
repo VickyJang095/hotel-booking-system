@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<section class="max-w-7xl mx-auto px-6 py-5 -mt-55 font-roboto scroll-animate slide-left">
+<section class="max-w-7xl mx-auto px-6 py-5 -mt-40 font-roboto scroll-animate slide-left">
     <!-- Title -->
     <h2 class="font-bold text-[40px] text-center text-gray-900 mb-16">
         Why Travellers Trust Tripto

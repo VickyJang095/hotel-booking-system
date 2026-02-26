@@ -97,7 +97,7 @@
                             <span id="guestText" class="border-none text-gray-500 text-[16px]">1 room, 1 adult, 0 children</span>
                         </button>
                         <!-- Dropdown -->
-                        <div id="guestBox" class="hidden absolute bg-white shadow-lg text-gray-700 rounded-xl p-4 mt-2 w-64">
+                        <div id="guestBox" class="hidden absolute bg-white shadow-lg text-gray-700 rounded-xl p-4 mt-2 w-64 z-10">
                             <div class="flex justify-between">
                                 <span>Rooms</span>
                                 <div>
