@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'Hotel Booking')</title>
     @vite('resources/css/app.css')
+    @stack('styles')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -23,6 +24,8 @@
     @stack('auth.modal')
 
     @include('partials.footer')
+
+    @stack('scripts')
 
 </body>
 

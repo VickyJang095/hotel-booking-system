@@ -1,5 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
-<nav class="relative bg-white after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10 scroll-animate zoom-in fade-up">
+<nav class="relative shadow-sm bg-white after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10 scroll-animate zoom-in fade-up">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-4">
         <div class="relative flex h-24 items-center justify-between">
             <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -113,15 +113,6 @@
                 </div>
                 @endguest
             </div>
-        </div>
-    </div>
-    <div id="mobile-menu" hidden class="block sm:hidden">
-        <div class="space-y-1 px-2 pt-2 pb-3">
-            <!-- Current: "bg-gray-950/50 text-white", Default: "text-gray-300 hover:bg-white/5 hover:text-white" -->
-            <a href="#" aria-current="page" class="block rounded-md bg-gray-950/50 px-3 py-2 text-base font-medium text-white">Dashboard</a>
-            <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Team</a>
-            <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Projects</a>
-            <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">Calendar</a>
         </div>
     </div>
 </nav>

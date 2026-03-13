@@ -1,8 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -25,3 +27,6 @@ Route::post('/logout', function () {
 Route::get('/login', function () {
     return redirect('/');
 })->name('login');
+
+Route::get('/search', [SearchController::class, 'search'])->name('hotels.search');
+Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
