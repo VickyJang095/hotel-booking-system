@@ -20,6 +20,8 @@
 
 @include('home.testimonials')
 
+@include('auth.modal')
+
 @endsection
 
 <style>
@@ -27,7 +29,6 @@
         scroll-behavior: smooth;
     }
 
-    /* Scroll animation base */
     .scroll-animate {
         opacity: 0;
         transform: translateY(40px);
@@ -40,20 +41,17 @@
         transform: translateY(0);
     }
 
-    /* Variants */
     .fade-up { transform: translateY(40px); }
     .fade-down { transform: translateY(-40px); }
     .slide-left { transform: translateX(-60px); }
     .slide-right { transform: translateX(60px); }
     .zoom-in { transform: scale(0.95); }
-
-    /* Delay */
+    .zoom-out { transform: scale(1.05); }
     .delay-1 { transition-delay: .1s; }
     .delay-2 { transition-delay: .2s; }
     .delay-3 { transition-delay: .3s; }
     .delay-4 { transition-delay: .4s; }
 
-    /* Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
