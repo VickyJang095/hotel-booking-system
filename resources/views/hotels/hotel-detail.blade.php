@@ -497,7 +497,7 @@ $ratingLabel = $hotel->rating >= 4.5 ? 'Excellent' : ($hotel->rating >= 4.0 ? 'V
                                             <p class="text-xs text-gray-400">per night</p>
                                         </div>
                                         @if($room['available'])
-                                        <a href="{{ route('hotels.show', $hotel->id) }}"
+                                        <a href="{{ route('booking.details', $hotel->id) }}?check_in={{ $checkIn }}&check_out={{ $checkOut }}&adults={{ $adults }}&rooms=1&children=0"
                                             class="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition block text-center">
                                             Reserve
                                         </a>
@@ -733,7 +733,7 @@ $ratingLabel = $hotel->rating >= 4.5 ? 'Excellent' : ($hotel->rating >= 4.0 ? 'V
 
                 {{-- Booking form --}}
                 <div class="p-5">
-                    <form action="{{ route('hotels.show', $hotel->id) }}" method="GET" class="space-y-3">
+                    <form action="{{ route('booking.details', $hotel->id) }}" method="GET" class="space-y-3">
 
                         {{-- Check-in / Check-out --}}
                         <div class="grid grid-cols-2 gap-2">

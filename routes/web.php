@@ -5,6 +5,7 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -30,3 +31,5 @@ Route::get('/login', function () {
 
 Route::get('/search', [SearchController::class, 'search'])->name('hotels.search');
 Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
+Route::get('/hotels/{id}/booking', [BookingController::class, 'showDetails'])->name('booking.details');
+Route::get('/hotels/{id}/payment', [BookingController::class, 'showPayment'])->name('booking.payment');
