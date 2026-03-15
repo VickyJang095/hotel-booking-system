@@ -3,61 +3,91 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Booking;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Hotel extends Model
 {
     protected $fillable = [
+        'owner_id',
+        'status',
+        'reject_reason',
         'name',
         'city',
         'address',
-        'image',
+        'description',
         'price_per_night',
+        'star_rating',
+        'rating',
+        'review_count',
         'total_rooms',
         'max_guests_per_room',
-        'rating',
-        'description'
-    ];
-    protected $casts = [
-        'amenities'            => 'array',
-        'payment_methods'      => 'array',
-        'free_cancellation'    => 'boolean',
-        'instant_booking'      => 'boolean',
-        'pay_at_property'      => 'boolean',
-        'pay_later'            => 'boolean',
-        'wheelchair_accessible' => 'boolean',
+        'type',
+        'distance_from_centre',
+        'free_cancellation',
+        'instant_booking',
+        'pay_at_property',
+        'pay_later',
+        'wheelchair_accessible',
+        'amenities',
+        'payment_methods',
+        'latitude',
+        'longitude',
+        'image',
     ];
 
-    public function bookings()
+    protected function casts(): array
     {
-        return $this->hasMany(Booking::class);
+        return [
+            'amenities'             => 'array',
+            'payment_methods'       => 'array',
+            'free_cancellation'     => 'boolean',
+            'instant_booking'       => 'boolean',
+            'pay_at_property'       => 'boolean',
+            'pay_later'             => 'boolean',
+            'wheelchair_accessible' => 'boolean',
+        ];
     }
 
-    // Scope tìm phòng còn trống trong khoảng ngày
-    public function scopeAvailable($query, $checkIn, $checkOut, $rooms)
+    // ── Relationships ────────────────────────────────────────
+    public function owner()
     {
-        return $query->where('total_rooms', '>=', function ($sub) use ($checkIn, $checkOut, $rooms) {
-            $sub->selectRaw('COALESCE(SUM(b.rooms), 0) + ?', [$rooms])
-                ->from('bookings as b')
-                ->whereColumn('b.hotel_id', 'hotels.id')
-                ->where('b.status', '!=', 'cancelled')
-                ->where('b.check_in', '<', $checkOut)
-                ->where('b.check_out', '>', $checkIn);
-        });
+        return $this->belongsTo(User::class, 'owner_id');
     }
+
+    // ── Scopes ───────────────────────────────────────────────
+    public function scopeApproved(Builder $query): Builder
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopePendingReview(Builder $query): Builder
+    {
+        return $query->where('status', 'pending_review');
+    }
+
+    // ── Accessor ─────────────────────────────────────────────
     public function getImageUrlAttribute(): string
     {
-        $fallback = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80';
-
-        if (!$this->image) return $fallback;
-
+        if (!$this->image) {
+            return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
+        }
         if (str_starts_with($this->image, 'http')) {
             return $this->image;
         }
-
         return asset('storage/' . $this->image);
+    }
+
+    // ── Status helpers ───────────────────────────────────────
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+    public function isPendingReview(): bool
+    {
+        return $this->status === 'pending_review';
+    }
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 }

@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use League\CommonMark\Extension\CommonMark\Node\Inline\Code;
 
 class AuthController extends Controller
 {
@@ -22,12 +21,12 @@ class AuthController extends Controller
             ]);
 
             $email = $request->email;
-            $code = (string) rand(1000, 9999);
+            $code  = (string) rand(1000, 9999);
 
             EmailOtp::updateOrCreate(
                 ['email' => $email],
                 [
-                    'code' => $code,
+                    'code'       => $code,
                     'code_email' => $email,
                     'expires_at' => Carbon::now()->addMinutes(5)
                 ]
@@ -35,23 +34,22 @@ class AuthController extends Controller
 
             Mail::to($email)->send(new SendOtpMail($code));
 
-            // Log để debug
             Log::info('OTP sent', ['email' => $email, 'code' => $code]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Verification code sent successfully',
-                'email' => $email,
+                'email'   => $email,
                 // ONLY FOR DEVELOPMENT - REMOVE IN PRODUCTION
                 'debug_code' => config('app.debug') ? $code : null
-            ], 200);
+            ]);
         } catch (\Exception $e) {
             Log::error('Send OTP failed', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send verification code',
-                'error' => config('app.debug') ? $e->getMessage() : null
+                'error'   => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -63,10 +61,10 @@ class AuthController extends Controller
             'code'  => 'required'
         ]);
 
-        $email = strtolower(trim($request->email));
-        $inputCode = trim($request->code); 
+        $email     = strtolower(trim($request->email));
+        $inputCode = trim($request->code);
 
-        $otp = EmailOtp::where('email', $email)  
+        $otp = EmailOtp::where('email', $email)
             ->where('code', $inputCode)
             ->first();
 
@@ -86,7 +84,11 @@ class AuthController extends Controller
 
         $user = User::firstOrCreate(
             ['email' => $email],
-            ['name' => explode('@', $email)[0], 'password' => bcrypt(str()->random(16))]
+            [
+                'name'     => explode('@', $email)[0],
+                'password' => bcrypt(str()->random(16)),
+                'role'     => 'user',
+            ]
         );
 
         Auth::login($user);
@@ -94,9 +96,16 @@ class AuthController extends Controller
 
         $otp->delete();
 
+        $redirectUrl = match ($user->role) {
+            'admin'       => route('admin.dashboard'),
+            'hotel_owner' => route('owner.dashboard'),
+            default       => route('home'),
+        };
+
         return response()->json([
-            'success' => true,
-            'message' => 'Login successful!'
+            'success'      => true,
+            'message'      => 'Login successful!',
+            'redirect_url' => $redirectUrl,
         ]);
     }
 }
