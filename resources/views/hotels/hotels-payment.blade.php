@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Booking Details - Tripto')
+@section('title', 'Chi tiết đặt phòng - Tripto')
 
 @push('styles')
 <style>
-    /* Progress steps */
     .step-line {
         flex: 1;
         height: 2px;
@@ -15,7 +14,6 @@
         background: #2563eb;
     }
 
-    /* Form inputs */
     .form-input {
         width: 100%;
         border: 1px solid #d1d5db;
@@ -37,7 +35,6 @@
         color: #9ca3af;
     }
 
-    /* Phone input */
     .phone-wrap {
         display: flex;
         border: 1px solid #d1d5db;
@@ -85,7 +82,6 @@
         background: transparent;
     }
 
-    /* Email masked */
     .email-wrap {
         position: relative;
     }
@@ -98,7 +94,6 @@
         color: #9ca3af;
     }
 
-    /* Guest block */
     .guest-block {
         border: 1px solid #e5e7eb;
         border-radius: 16px;
@@ -106,7 +101,6 @@
         margin-bottom: 16px;
     }
 
-    /* Summary card */
     .summary-card {
         border: 1px solid #e5e7eb;
         border-radius: 16px;
@@ -115,7 +109,6 @@
         top: 80px;
     }
 
-    /* Add-on row */
     .addon-row {
         display: flex;
         align-items: center;
@@ -128,7 +121,6 @@
         border-bottom: none;
     }
 
-    /* Next step btn */
     .btn-next {
         background: #2563eb;
         color: #fff;
@@ -147,7 +139,6 @@
         transform: scale(.98);
     }
 
-    /* Scrollbar hide */
     .scrollbar-hide {
         -ms-overflow-style: none;
         scrollbar-width: none;
@@ -161,6 +152,8 @@
 
 @section('content')
 @php
+use App\Helpers\TranslationHelper as TH;
+$currency = app(\App\Services\CurrencyService::class);
 $hotel = $hotel ?? null;
 $checkIn = request('check_in', '2025-08-14');
 $checkOut = request('check_out', '2025-08-19');
@@ -178,30 +171,26 @@ $serviceFee = 4.20;
 $taxes = round($roomTotal * 0.0165, 2);
 $grandTotal = $roomTotal + $serviceFee + $taxes;
 
-$ratingLabel = $hotel && $hotel->rating >= 4.5 ? 'Excellent' : 'Very Good';
+$ratingLabel = $hotel && $hotel->rating >= 4.5 ? __('search.excellent') : __('search.very_good');
 $reviewCount = $hotel->review_count ?? 1200;
 @endphp
-
 {{-- PROGRESS STEPS --}}
 <div class="bg-white border-b border-gray-100">
     <div class="max-w-2xl mx-auto px-4 py-5">
         <div class="flex items-center gap-0">
-            {{-- Step 1 --}}
             <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <div class="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center text-sm font-bold">1</div>
-                <span class="text-xs font-medium text-gray-500 whitespace-nowrap">Your selection</span>
+                <span class="text-xs font-medium text-gray-500 whitespace-nowrap">{{ __('booking.step_selection') }}</span>
             </div>
             <div class="step-line done mx-2 mb-5"></div>
-            {{-- Step 2 --}}
             <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">2</div>
-                <span class="text-xs font-bold text-gray-900 whitespace-nowrap">Your details</span>
+                <span class="text-xs font-bold text-gray-900 whitespace-nowrap">{{ __('booking.step_details') }}</span>
             </div>
             <div class="step-line mx-2 mb-5"></div>
-            {{-- Step 3 --}}
             <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <div class="w-8 h-8 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-sm font-semibold">3</div>
-                <span class="text-xs font-medium text-gray-400 whitespace-nowrap">Finish booking</span>
+                <span class="text-xs font-medium text-gray-400 whitespace-nowrap">{{ __('booking.finish_booking') }}</span>
             </div>
         </div>
     </div>
@@ -214,63 +203,63 @@ $reviewCount = $hotel->review_count ?? 1200;
 
             {{-- LEFT: FORM --}}
             <div class="flex-1 min-w-0">
-                <h1 class="text-2xl font-bold text-gray-900 mb-6">Booking details</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ __('booking.booking_details') }}</h1>
 
                 {{-- YOUR TRIP --}}
                 <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
-                    <h2 class="text-base font-bold text-gray-900 mb-4">Your trip</h2>
+                    <h2 class="text-base font-bold text-gray-900 mb-4">{{ __('booking.your_trip') }}</h2>
                     <div class="divide-y divide-gray-100">
                         <div class="flex items-center justify-between py-3">
                             <div>
-                                <p class="text-sm font-semibold text-gray-700">Dates</p>
-                                <p class="text-sm text-gray-500 mt-0.5">{{ $ciObj->format('M d') }} - {{ $coObj->format('d') }}</p>
+                                <p class="text-sm font-semibold text-gray-700">{{ __('booking.dates') }}</p>
+                                <p class="text-sm text-gray-500 mt-0.5">{{ $ciObj->format('d/m') }} - {{ $coObj->format('d/m/Y') }}</p>
                             </div>
-                            <a href="javascript:history.back()" class="text-sm font-semibold text-blue-600 hover:underline">Edit</a>
+                            <a href="javascript:history.back()" class="text-sm font-semibold text-blue-600 hover:underline">{{ __('booking.edit') }}</a>
                         </div>
                         <div class="flex items-center justify-between py-3">
                             <div>
-                                <p class="text-sm font-semibold text-gray-700">Guests</p>
-                                <p class="text-sm text-gray-500 mt-0.5">{{ $adults + $children }} guest{{ ($adults + $children) > 1 ? 's' : '' }}</p>
+                                <p class="text-sm font-semibold text-gray-700">{{ __('booking.guests') }}</p>
+                                <p class="text-sm text-gray-500 mt-0.5">{{ $adults + $children }} {{ __('search.guests') }}</p>
                             </div>
-                            <a href="javascript:history.back()" class="text-sm font-semibold text-blue-600 hover:underline">Edit</a>
+                            <a href="javascript:history.back()" class="text-sm font-semibold text-blue-600 hover:underline">{{ __('booking.edit') }}</a>
                         </div>
                     </div>
                 </div>
 
                 {{-- GUEST INFO --}}
                 <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
-                    <h2 class="text-base font-bold text-gray-900 mb-1">Guest Info</h2>
-                    <p class="text-sm text-gray-400 mb-5">Guest names must match the valid ID which will be used at check-in.</p>
+                    <h2 class="text-base font-bold text-gray-900 mb-1">{{ __('booking.guest_info') }}</h2>
+                    <p class="text-sm text-gray-400 mb-5">{{ __('booking.guest_id_note') }}</p>
 
                     <form id="bookingForm" action="{{ route('booking.payment', $hotel->id ?? 0) }}" method="GET">
+                        <input type="hidden" name="guest_name">
+                        <input type="hidden" name="guest_email">
+                        <input type="hidden" name="guest_phone">
                         <input type="hidden" name="check_in" value="{{ $checkIn }}">
                         <input type="hidden" name="check_out" value="{{ $checkOut }}">
                         <input type="hidden" name="adults" value="{{ $adults }}">
                         <input type="hidden" name="rooms" value="{{ $rooms }}">
                         <input type="hidden" name="children" value="{{ $children }}">
 
-                        {{-- Guest 1 (primary) --}}
                         <div class="guest-block" id="guest-1-block">
                             <div class="flex items-center justify-between mb-4">
-                                <p class="text-sm font-bold text-gray-800">Guest 1</p>
+                                <p class="text-sm font-bold text-gray-800">{{ __('booking.guest_label', ['n' => 1]) }}</p>
                                 <button type="button" onclick="addGuest()"
                                     class="flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    Add New Guest <span class="text-gray-400 font-normal">(Optional)</span>
+                                    {{ __('booking.add_guest') }} <span class="text-gray-400 font-normal">({{ __('booking.optional') }})</span>
                                 </button>
                             </div>
                             <div class="grid grid-cols-2 gap-3 mb-3">
                                 <div>
-                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">First Name</label>
-                                    <input type="text" name="guests[0][first_name]" placeholder="Emmily"
-                                        class="form-input" required>
+                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.first_name') }}</label>
+                                    <input type="text" name="guests[0][first_name]" placeholder="Nguyễn" class="form-input" required>
                                 </div>
                                 <div class="relative">
-                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Last Name</label>
-                                    <input type="text" name="guests[0][last_name]" placeholder="Morgan"
-                                        class="form-input pr-10" required>
+                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.last_name') }}</label>
+                                    <input type="text" name="guests[0][last_name]" placeholder="Văn A" class="form-input pr-10" required>
                                     <button type="button" class="absolute right-3 top-[34px] text-gray-300 hover:text-red-400 transition">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -280,24 +269,20 @@ $reviewCount = $hotel->review_count ?? 1200;
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Email Address</label>
+                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.email_address') }}</label>
                                     <div class="relative">
-                                        <svg class="email-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                        <input type="email" name="guests[0][email]" placeholder="em***an@gmail.com"
-                                            class="form-input pl-9" required>
+                                        <input type="email" name="guests[0][email]" placeholder="email@gmail.com" class="form-input pl-9" required>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Phone Number</label>
+                                    <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.phone') }}</label>
                                     <div class="phone-wrap">
                                         <div class="phone-flag">
-                                            <span>🇺🇸</span>
+                                            <span>🇻🇳</span>
                                             <select name="phone_code" class="max-w-[60px]">
+                                                <option value="+84">+84</option>
                                                 <option value="+1">+1</option>
                                                 <option value="+44">+44</option>
-                                                <option value="+84">+84</option>
                                                 <option value="+34">+34</option>
                                                 <option value="+33">+33</option>
                                                 <option value="+49">+49</option>
@@ -305,99 +290,85 @@ $reviewCount = $hotel->review_count ?? 1200;
                                                 <option value="+86">+86</option>
                                             </select>
                                         </div>
-                                        <input type="tel" name="guests[0][phone]" placeholder="000 000 000"
-                                            class="phone-input">
+                                        <input type="tel" name="guests[0][phone]" placeholder="090 123 4567" class="phone-input">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Extra guests container --}}
                         <div id="extra-guests"></div>
 
                         {{-- SPECIAL REQUESTS --}}
                         <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
                             <h2 class="text-base font-bold text-gray-900 mb-1">
-                                Special Requests <span class="text-gray-400 font-normal text-sm">(optional)</span>
+                                {{ __('booking.special_requests') }} <span class="text-gray-400 font-normal text-sm">({{ __('booking.optional') }})</span>
                             </h2>
-                            <p class="text-sm text-gray-400 mb-4">The property will do its best, but cannot guarantee to fulfil all requests</p>
+                            <p class="text-sm text-gray-400 mb-4">{{ __('booking.special_requests_note') }}</p>
                             <textarea name="special_requests" rows="4"
-                                placeholder="Let the property know if there's anything they can assist you with."
+                                placeholder="{{ __('booking.special_requests_ph') }}"
                                 class="form-input resize-none"></textarea>
                         </div>
 
                         {{-- ADD-ONS --}}
                         <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
-
-                            {{-- Travel insurance --}}
                             <div class="addon-row">
                                 <div>
-                                    <p class="text-sm font-bold text-gray-900">Add travel insurance?</p>
-                                    <p class="text-sm text-gray-500 mt-0.5">Yes, add for 100$ <span class="text-gray-400">· Only available when booking</span></p>
+                                    <p class="text-sm font-bold text-gray-900">{{ __('booking.add_travel_insurance') }}</p>
+                                    <p class="text-sm text-gray-500 mt-0.5">{{ __('booking.insurance_desc') }}</p>
                                 </div>
                                 <button type="button" onclick="toggleAddon(this, 'insurance')"
                                     class="text-sm font-semibold text-gray-600 border border-gray-300 hover:border-blue-500 hover:text-blue-600 px-4 py-1.5 rounded-xl transition">
-                                    Add
+                                    {{ __('booking.add_btn') }}
                                 </button>
                             </div>
                             <input type="hidden" name="travel_insurance" id="insurance" value="0">
 
-                            {{-- Required: phone --}}
                             <div class="addon-row">
                                 <div>
-                                    <p class="text-sm font-bold text-gray-900">Required for your trip</p>
-                                    <p class="text-sm font-semibold text-gray-700 mt-1">Phone number</p>
-                                    <p class="text-sm text-gray-500">Add and confirm our phone number to get trip update</p>
+                                    <p class="text-sm font-bold text-gray-900">{{ __('booking.required_trip') }}</p>
+                                    <p class="text-sm font-semibold text-gray-700 mt-1">{{ __('booking.phone_confirm_label') }}</p>
+                                    <p class="text-sm text-gray-500">{{ __('booking.phone_confirm_desc') }}</p>
                                 </div>
                                 <button type="button" onclick="toggleAddon(this, 'phone_confirmed')"
                                     class="text-sm font-semibold text-gray-600 border border-gray-300 hover:border-blue-500 hover:text-blue-600 px-4 py-1.5 rounded-xl transition">
-                                    Add
+                                    {{ __('booking.add_btn') }}
                                 </button>
                             </div>
                             <input type="hidden" name="phone_confirmed" id="phone_confirmed" value="0">
 
-                            {{-- Cancellation policy --}}
                             <div class="pt-4">
-                                <p class="text-sm font-bold text-gray-900 mb-1">Cancellation policy</p>
+                                <p class="text-sm font-bold text-gray-900 mb-1">{{ __('booking.cancellation_policy') }}</p>
                                 <p class="text-sm text-gray-500">
                                     @if($hotel && $hotel->free_cancellation)
-                                    Free cancellation before {{ $ciObj->subDays(7)->format('M d') }}.
-                                    cancel before check-in on {{ $ciObj->subDays(3)->format('M d') }} for a partial refund.
+                                    {{ __('search.free_cancellation') }} trước {{ $ciObj->subDays(7)->format('d/m') }}.
+                                    Hủy trước ngày {{ $ciObj->subDays(3)->format('d/m') }} để được hoàn tiền một phần.
                                     @else
-                                    This reservation is non-refundable.
+                                    {{ __('booking.non_refundable') }}
                                     @endif
                                 </p>
-                                <a href="#" class="text-sm text-blue-600 font-semibold hover:underline mt-1 inline-block">Learn more</a>
+                                <a href="#" class="text-sm text-blue-600 font-semibold hover:underline mt-1 inline-block">{{ __('booking.learn_more') }}</a>
                             </div>
                         </div>
 
-                        {{-- NEXT STEP --}}
                         <div class="flex justify-center pb-8">
-                            <button type="submit" class="btn-next">
-                                Next step
-                            </button>
+                            <button type="submit" class="btn-next">{{ __('booking.next_step') }}</button>
                         </div>
-
                     </form>
                 </div>
-
-            </div>{{-- /left --}}
+            </div>
 
             {{-- RIGHT: SUMMARY --}}
             <div class="w-72 shrink-0 hidden lg:block">
                 <div class="summary-card">
-
-                    {{-- Hotel info --}}
                     <div class="p-4 border-b border-gray-100">
                         <div class="flex gap-3">
                             <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0">
                                 <img src="{{ $hotel ? $hotel->image_url : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80' }}"
-                                    alt="{{ $hotel->name ?? 'Hotel' }}"
-                                    class="w-full h-full object-cover"
+                                    alt="{{ $hotel->name ?? 'Hotel' }}" class="w-full h-full object-cover"
                                     onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80'">
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-900 leading-tight mb-1">{{ $hotel->name ?? 'Hotel Arts Barcelona' }}</p>
+                                <p class="text-sm font-bold text-gray-900 leading-tight mb-1">{{ $hotel->name ?? 'Khách sạn' }}</p>
                                 <div class="flex items-center gap-0.5 mb-1">
                                     @for($s=0;$s<($hotel->star_rating ?? 4);$s++)
                                         <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -405,17 +376,16 @@ $reviewCount = $hotel->review_count ?? 1200;
                                         </svg>
                                         @endfor
                                 </div>
-                                <p class="text-xs text-gray-400">{{ $hotel->city ?? 'Barcelona' }}, Spain</p>
+                                <p class="text-xs text-gray-400">{{ $hotel->city ?? 'Việt Nam' }}</p>
                                 <div class="flex items-center gap-1.5 mt-1">
                                     <span class="bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">{{ $hotel->rating ?? '5.0' }}</span>
                                     <span class="text-xs font-semibold text-blue-600">{{ $ratingLabel }}</span>
-                                    <span class="text-xs text-gray-400">{{ number_format($reviewCount) }} reviews</span>
+                                    <span class="text-xs text-gray-400">{{ number_format($reviewCount) }} {{ __('search.reviews') }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Check-in/out --}}
                     <div class="p-4 border-b border-gray-100">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -423,56 +393,52 @@ $reviewCount = $hotel->review_count ?? 1200;
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    Check-in
+                                    {{ __('booking.check_in') }}
                                 </div>
-                                <p class="text-sm font-semibold text-gray-800">{{ $ciObj->format('m/d/Y') }}</p>
+                                <p class="text-sm font-semibold text-gray-800">{{ $ciObj->format('d/m/Y') }}</p>
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    Check-out
+                                    {{ __('booking.check_out') }}
                                 </div>
-                                <p class="text-sm font-semibold text-gray-800">{{ $coObj->format('m/d/Y') }}</p>
+                                <p class="text-sm font-semibold text-gray-800">{{ $coObj->format('d/m/Y') }}</p>
                             </div>
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-100">
-                            <p class="text-xs text-gray-500 font-semibold mb-0.5">Rooms and Guests</p>
-                            <p class="text-sm text-gray-700">{{ $rooms }} room{{ $rooms > 1 ? 's' : '' }}, {{ $adults }} adult{{ $adults > 1 ? 's' : '' }}{{ $children > 0 ? ', '.$children.' child'.($children>1?'ren':'') : '' }}</p>
+                            <p class="text-xs text-gray-500 font-semibold mb-0.5">{{ __('booking.rooms_and_guests') }}</p>
+                            <p class="text-sm text-gray-700">{{ $rooms }} {{ __('booking.room_unit') }}, {{ $adults }} {{ __('booking.adult_unit') }}{{ $children > 0 ? ', '.$children.' '.(__('booking.child_unit')) : '' }}</p>
                         </div>
                     </div>
 
-                    {{-- Price details --}}
                     <div class="p-4">
-                        <p class="text-sm font-bold text-gray-900 mb-3">Price details:</p>
+                        <p class="text-sm font-bold text-gray-900 mb-3">{{ __('booking.price_details') }}</p>
                         <div class="space-y-2 mb-3">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">${{ number_format($pricePerNight, 0) }} x {{ $nights }} nights</span>
-                                <span class="font-medium text-gray-800">${{ number_format($roomTotal, 2) }}</span>
+                                <span class="text-gray-500">{{ $currency->formatPrice($pricePerNight) }} x {{ $nights }} {{ __('search.nights_label') }}</span>
+                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($roomTotal) }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Tripto service fee</span>
-                                <span class="font-medium text-gray-800">${{ number_format($serviceFee, 2) }}</span>
+                                <span class="text-gray-500">{{ __('booking.service_fee') }}</span>
+                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($serviceFee) }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Taxes</span>
-                                <span class="font-medium text-gray-800">${{ number_format($taxes, 2) }}</span>
+                                <span class="text-gray-500">{{ __('booking.taxes') }}</span>
+                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($taxes) }}</span>
                             </div>
                         </div>
                         <div class="border-t border-gray-200 pt-3 flex justify-between">
-                            <span class="text-sm font-bold text-gray-900">Total USD</span>
-                            <span class="text-sm font-bold text-gray-900">$ {{ number_format($grandTotal, 0) }}</span>
+                            <span class="text-sm font-bold text-gray-900">{{ __('booking.total') }}</span>
+                            <span class="text-sm font-bold text-gray-900">{{ $currency->formatPrice($grandTotal) }}</span>
                         </div>
                     </div>
-
                 </div>
-            </div>{{-- /right --}}
-
+            </div>
         </div>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')
@@ -487,21 +453,21 @@ $reviewCount = $hotel->review_count ?? 1200;
         block.id = 'guest-' + guestCount + '-block';
         block.innerHTML = `
         <div class="flex items-center justify-between mb-4">
-            <p class="text-sm font-bold text-gray-800">Guest ${guestCount}</p>
+            <p class="text-sm font-bold text-gray-800">Khách ${guestCount}</p>
             <button type="button" onclick="removeGuest(${guestCount})"
-                    class="text-xs font-semibold text-red-400 hover:text-red-600 transition flex items-center gap-1">
+                class="text-xs font-semibold text-red-400 hover:text-red-600 transition flex items-center gap-1">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                Remove
+                Xóa
             </button>
         </div>
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">First Name</label>
-                <input type="text" name="guests[${guestCount-1}][first_name]" placeholder="First name" class="form-input">
+                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Họ</label>
+                <input type="text" name="guests[${guestCount-1}][first_name]" placeholder="Họ" class="form-input">
             </div>
             <div>
-                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Last Name</label>
-                <input type="text" name="guests[${guestCount-1}][last_name]" placeholder="Last name" class="form-input">
+                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Tên</label>
+                <input type="text" name="guests[${guestCount-1}][last_name]" placeholder="Tên" class="form-input">
             </div>
         </div>`;
         container.appendChild(block);
@@ -517,26 +483,30 @@ $reviewCount = $hotel->review_count ?? 1200;
         const field = document.getElementById(fieldId);
         const isActive = btn.classList.contains('active');
         if (isActive) {
-            btn.textContent = 'Add';
+            btn.textContent = 'Thêm';
             btn.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600');
             btn.classList.add('text-gray-600', 'border-gray-300');
             field.value = '0';
         } else {
-            btn.textContent = 'Added ✓';
+            btn.textContent = 'Đã thêm ✓';
             btn.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600');
             btn.classList.remove('text-gray-600', 'border-gray-300');
             field.value = '1';
         }
     }
 
-    // Basic form validation
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
         const firstName = this.querySelector('[name="guests[0][first_name]"]').value.trim();
         const lastName = this.querySelector('[name="guests[0][last_name]"]').value.trim();
         const email = this.querySelector('[name="guests[0][email]"]').value.trim();
+        const phone = this.querySelector('[name="guests[0][phone]"]').value.trim();
+
+        this.elements['guest_name'].value = firstName + ' ' + lastName;
+        this.elements['guest_email'].value = email;
+        this.elements['guest_phone'].value = phone;
         if (!firstName || !lastName || !email) {
             e.preventDefault();
-            alert('Please fill in all required guest fields.');
+            alert('Vui lòng điền đầy đủ thông tin khách hàng bắt buộc.');
         }
     });
 </script>

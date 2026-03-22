@@ -1,5 +1,5 @@
-<h2>Your verification code</h2>
+<h2>{{ __('common.mes_cf') }}</h2>
 <p style="font-size:24px;font-weight:bold">
     {{ $code }}
 </p>
-<p>This code will expire in 5 minutes.</p>
+<p>{{ __('common.mes_cf_5p') }}</p>

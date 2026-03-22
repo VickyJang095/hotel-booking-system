@@ -8,7 +8,7 @@
                         <i class="fa-solid fa-arrow-left text-gray-600 text-lg"></i>
                     </button>
                     <h2 id="auth-dialog-title" class="text-base font-bold text-gray-900 mt-2">
-                        Log in or sign up
+                        {{ __('auth.login_or_signup') }}
                     </h2>
                     <button command="close" commandfor="auth-dialog" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         <i class="fa-solid fa-xmark text-gray-600 text-lg"></i>
@@ -17,37 +17,37 @@
 
                 <!-- Step 1 -->
                 <div class="px-14 py-10 text-center" id="step-email">
-                    <h3 class="text-2xl font-bold text-gray-900">Welcome to Tripto</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ __('auth.welcome') }}</h3>
 
                     <div class="mt-6 text-left">
-                        <label class="block text-base font-medium text-gray-500">Email address</label>
-                        <input type="email" id="emailInput" placeholder="Enter your email address"
+                        <label class="block text-base font-medium text-gray-500">{{ __('auth.email_address') }}</label>
+                        <input type="email" id="emailInput" placeholder="{{ __('auth.email_placeholder') }}"
                             class="mt-1 w-full rounded-lg border border-gray-300 px-6 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
                     </div>
 
                     <button id="continueBtn" disabled
                         class="mt-4 w-full cursor-not-allowed rounded-lg bg-gray-200 py-2 text-sm font-semibold text-gray-400">
-                        Continue
+                        {{ __('auth.continue') }}
                     </button>
 
                     <div class="my-5 flex items-center gap-3">
                         <div class="h-px flex-1 bg-gray-200"></div>
-                        <span class="text-xs text-gray-400">or</span>
+                        <span class="text-xs text-gray-400">{{ __('auth.or') }}</span>
                         <div class="h-px flex-1 bg-gray-200"></div>
                     </div>
 
                     <div class="space-y-3">
                         <button class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-400 px-6 py-3 text-sm font-medium hover:bg-gray-50">
                             <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-5 w-5">
-                            Continue with Google
+                            {{ __('auth.continue_google') }}
                         </button>
                         <button class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-400 px-6 py-3 text-sm font-medium hover:bg-gray-50">
                             <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg" class="h-5 w-5">
-                            Continue with Apple
+                            {{ __('auth.continue_apple') }}
                         </button>
                         <button class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-400 px-6 py-3 text-sm font-medium hover:bg-gray-50">
                             <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="h-5 w-5">
-                            Continue with Facebook
+                            {{ __('auth.continue_facebook') }}
                         </button>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                 <!-- Step 2 -->
                 <div id="step-verify" class="hidden text-center px-14 py-10">
                     <p class="mb-4 text-base text-gray-500">
-                        Enter verification code sent to <span id="emailText" class="font-medium"></span>
+                        {{ __('auth.otp_sent_to') }} <span id="emailText" class="font-medium"></span>
                     </p>
                     <div class="m-4 flex justify-center gap-3">
                         <input maxlength="1" class="otp-input">
@@ -66,22 +66,28 @@
 
                     <button id="verifyBtn" disabled
                         class="m-4 w-full cursor-not-allowed rounded-lg bg-gray-200 py-2 text-sm font-semibold text-gray-400">
-                        Verify
+                        {{ __('auth.verify') }}
                     </button>
 
                     <p class="mt-4 text-sm text-gray-500">
-                        Didn't receive email? Check your spam folder or request another code in
-                        <span id="countdown">60</span> seconds
+                        {{ __('auth.no_email') }} <span id="countdown">60</span> {{ __('auth.seconds') }}
                     </p>
 
                     <button onclick="editEmail()" class="mt-3 text-base text-blue-600">
-                        Edit Email
+                        {{ __('auth.edit_email') }}
                     </button>
                 </div>
             </el-dialog-panel>
         </div>
     </dialog>
 </el-dialog>
+
+{{-- Truyền text cho JS qua data attribute, tránh Blade trong script --}}
+<div id="auth-trans"
+    data-verifying="{{ __('auth.verifying') }}"
+    data-verify="{{ __('auth.verify') }}"
+    data-invalid="{{ __('auth.invalid_code') }}"
+    style="display:none"></div>
 
 <style>
     .otp-input {
@@ -95,10 +101,10 @@
 </style>
 
 <script>
-    const emailInput = document.getElementById('emailInput');
+    const emailInput  = document.getElementById('emailInput');
     const continueBtn = document.getElementById('continueBtn');
-    const verifyBtn = document.getElementById('verifyBtn');
-    const otpInputs = document.querySelectorAll('.otp-input');
+    const verifyBtn   = document.getElementById('verifyBtn');
+    const otpInputs   = document.querySelectorAll('.otp-input');
 
     // ── Enable/disable Continue button ──────────────────────
     emailInput.addEventListener('input', function() {
@@ -122,9 +128,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({
-                email
-            })
+            body: JSON.stringify({ email })
         });
 
         document.getElementById('step-email').classList.add('hidden');
@@ -153,7 +157,6 @@
             }
         });
 
-        // Backspace để quay lại ô trước
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Backspace' && !input.value && otpInputs[index - 1]) {
                 otpInputs[index - 1].focus();
@@ -161,13 +164,14 @@
         });
     });
 
-    // ── Verify OTP (single listener) ─────────────────────────
+    // ── Verify OTP ─────────────────────────────────────────
     verifyBtn.addEventListener('click', async () => {
-        const code = [...otpInputs].map(i => i.value).join('');
+        const code  = [...otpInputs].map(i => i.value).join('');
         const email = emailInput.value;
+        const t     = document.getElementById('auth-trans').dataset;
 
         verifyBtn.disabled = true;
-        verifyBtn.textContent = 'Verifying...';
+        verifyBtn.textContent = t.verifying;
 
         const response = await fetch('/auth/verify-code', {
             method: 'POST',
@@ -175,21 +179,17 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({
-                email,
-                code
-            })
+            body: JSON.stringify({ email, code })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            // Redirect theo role từ server
             window.location.href = data.redirect_url;
         } else {
-            alert(data.message || 'Invalid code, please try again.');
+            alert(data.message || t.invalid);
             verifyBtn.disabled = false;
-            verifyBtn.textContent = 'Verify';
+            verifyBtn.textContent = t.verify;
         }
     });
 

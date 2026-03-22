@@ -2,36 +2,71 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
     protected $fillable = [
+        'role',
         'name',
-        'phone',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'role',
+        'phone',
+        'avatar',
+        'address',
+        'city',
+        'date_of_birth',
+        'gender',
+        'card_holder_name',
+        'card_number_masked',
+        'card_expiry',
+        'card_type',
+        'billing_address',
+        'billing_city',
+        'billing_postal_code',
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
         return [
+            'date_of_birth' => 'date',
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
         ];
     }
 
-    public function isAdmin(): bool      { return $this->role === 'admin'; }
-    public function isHotelOwner(): bool { return $this->role === 'hotel_owner'; }
-    public function isUser(): bool       { return $this->role === 'user'; }
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+    public function isHotelOwner(): bool
+    {
+        return $this->role === 'hotel_owner';
+    }
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    // Lấy avatar URL
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        $name = urlencode($this->name ?? 'User');
+        return "https://ui-avatars.com/api/?name={$name}&background=dbeafe&color=2563eb&bold=true";
+    }
+
+    // Lấy họ tên đầy đủ
+    public function getFullNameAttribute(): string
+    {
+        if ($this->first_name || $this->last_name) {
+            return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
+        }
+        return $this->name ?? '';
+    }
 }

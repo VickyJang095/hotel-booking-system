@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - Tripto</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -160,8 +161,8 @@
                     <span class="w-2 h-2 rounded-full bg-yellow-400 mb-1"></span>
                 </a>
                 <p class="text-xs text-gray-400 mt-1 font-medium">
-                    @if(auth()->user()->role === 'admin') Admin Panel
-                    @else Hotel Owner Panel
+                    @if(auth()->user()->role === 'admin') {{ __('admin.role_admin') }}
+                    @else {{ __('admin.role_owner') }}
                     @endif
                 </p>
             </div>
@@ -169,84 +170,75 @@
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 @if(auth()->user()->role === 'admin')
                 @php
-                $pendingOwnerRequests = \App\Models\OwnerRequest::where('status', 'pending')->count();
-                $pendingHotels = \App\Models\Hotel::where('status', 'pending_review')->count();
+                $pendingOwnerRequests = \App\Models\OwnerRequest::where('status','pending')->count();
+                $pendingHotels = \App\Models\Hotel::where('status','pending_review')->count();
                 @endphp
 
-                <a href="{{ route('admin.dashboard') }}"
-                    class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    Dashboard
+                    {{ __('admin.dashboard') }}
                 </a>
 
-                <a href="{{ route('admin.hotels') }}"
-                    class="sidebar-link {{ request()->routeIs('admin.hotels*') ? 'active' : '' }}">
+                <a href="{{ route('admin.hotels') }}" class="sidebar-link {{ request()->routeIs('admin.hotels*') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                    <span class="flex-1">Hotels</span>
+                    <span class="flex-1">{{ __('admin.hotels') }}</span>
                     @if($pendingHotels > 0)
                     <span class="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{{ $pendingHotels }}</span>
                     @endif
                 </a>
 
-                <a href="{{ route('admin.users') }}"
-                    class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                <a href="{{ route('admin.users') }}" class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    Users
+                    {{ __('admin.users') }}
                 </a>
 
-                <a href="{{ route('admin.owner-requests') }}"
-                    class="sidebar-link {{ request()->routeIs('admin.owner-requests*') ? 'active' : '' }}">
+                <a href="{{ route('admin.owner-requests') }}" class="sidebar-link {{ request()->routeIs('admin.owner-requests*') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span class="flex-1">Owner Requests</span>
+                    <span class="flex-1">{{ __('admin.owner_requests') }}</span>
                     @if($pendingOwnerRequests > 0)
                     <span class="text-xs font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">{{ $pendingOwnerRequests }}</span>
                     @endif
                 </a>
 
-                <a href="{{ route('admin.bookings') }}"
-                    class="sidebar-link {{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
+                <a href="{{ route('admin.bookings') }}" class="sidebar-link {{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    Bookings
+                    {{ __('admin.bookings') }}
                 </a>
 
                 @else
-                <a href="{{ route('owner.dashboard') }}"
-                    class="sidebar-link {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('owner.dashboard') }}" class="sidebar-link {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    Dashboard
+                    {{ __('admin.dashboard') }}
                 </a>
-                <a href="{{ route('owner.hotel.edit') }}"
-                    class="sidebar-link {{ request()->routeIs('owner.hotel*') ? 'active' : '' }}">
+                <a href="{{ route('owner.hotel.edit') }}" class="sidebar-link {{ request()->routeIs('owner.hotel*') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    My Hotel
+                    {{ __('admin.my_hotel') }}
                 </a>
-                <a href="{{ route('owner.rooms') }}"
-                    class="sidebar-link {{ request()->routeIs('owner.rooms*') ? 'active' : '' }}">
+                <a href="{{ route('owner.rooms') }}" class="sidebar-link {{ request()->routeIs('owner.rooms*') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
-                    Rooms
+                    {{ __('admin.rooms') }}
                 </a>
-                <a href="{{ route('owner.bookings') }}"
-                    class="sidebar-link {{ request()->routeIs('owner.bookings') ? 'active' : '' }}">
+                <a href="{{ route('owner.bookings') }}" class="sidebar-link {{ request()->routeIs('owner.bookings') ? 'active' : '' }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    Bookings
+                    {{ __('admin.bookings') }}
                 </a>
                 @endif
             </nav>
@@ -259,7 +251,7 @@
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-gray-800 truncate">{{ auth()->user()->name ?? 'User' }}</p>
                         <span class="badge {{ auth()->user()->role === 'admin' ? 'badge-admin' : 'badge-owner' }}">
-                            {{ auth()->user()->role === 'admin' ? 'Admin' : 'Owner' }}
+                            {{ auth()->user()->role === 'admin' ? __('admin.role_admin') : __('admin.role_owner') }}
                         </span>
                     </div>
                 </div>
@@ -269,7 +261,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        Logout
+                        {{ __('common.logout') }}
                     </button>
                 </form>
             </div>
@@ -278,15 +270,14 @@
         <div class="flex-1 ml-60">
             <header class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
                 <div>
-                    <h1 class="text-lg font-bold text-gray-900">@yield('page-title', 'Dashboard')</h1>
+                    <h1 class="text-lg font-bold text-gray-900">@yield('page-title', __('admin.dashboard'))</h1>
                     <p class="text-xs text-gray-400">@yield('page-subtitle', '')</p>
                 </div>
-                <a href="{{ route('home') }}" target="_blank"
-                    class="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1">
+                <a href="{{ route('home') }}" target="_blank" class="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    View Site
+                    {{ __('admin.view_site') }}
                 </a>
             </header>
 
@@ -312,7 +303,6 @@
             </main>
         </div>
     </div>
-
     @stack('scripts')
 </body>
 

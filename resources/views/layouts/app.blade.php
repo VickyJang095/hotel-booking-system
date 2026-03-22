@@ -19,9 +19,12 @@
 
     @include('partials.header')
 
+
     @yield('content')
 
     @stack('auth.modal')
+
+    @include('components.locale-modal')
 
     @include('partials.footer')
 

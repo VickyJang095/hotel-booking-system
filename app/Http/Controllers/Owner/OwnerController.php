@@ -7,6 +7,11 @@ use App\Models\Hotel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Booking;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmedMail;
+use App\Mail\BookingCancelledMail;
 
 class OwnerController extends Controller
 {
@@ -75,15 +80,50 @@ class OwnerController extends Controller
     }
 
     // ── BOOKINGS ─────────────────────────────────────────────
+
     public function bookings()
     {
-        /** @var User $user */
-        $user     = Auth::user();
-        $hotel    = Hotel::where('owner_id', $user->id)->firstOrFail();
-        $bookings = collect(); // placeholder
+        $user  = Auth::user();
+        $hotel = Hotel::where('owner_id', $user->id)->firstOrFail();
+
+        $bookings = \App\Models\Booking::where('hotel_id', $hotel->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('owner.bookings', compact('hotel', 'bookings'));
     }
 
+    public function confirmBooking($id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $booking->update([
+            'status' => 'confirmed',
+            'confirmed_at' => now()
+        ]);
+
+        // gửi mail
+        Mail::to($booking->guest_email)
+            ->send(new BookingConfirmedMail($booking));
+
+        return back()->with('success', 'Đã xác nhận booking!');
+    }
+
+    public function cancelBooking($id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $booking->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now()
+        ]);
+
+        // gửi mail
+        Mail::to($booking->guest_email)
+            ->send(new BookingCancelledMail($booking));
+
+        return back()->with('success', 'Đã huỷ booking!');
+    }
     // ── ROOMS ────────────────────────────────────────────────
     public function rooms()
     {

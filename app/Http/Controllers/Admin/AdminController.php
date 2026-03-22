@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
-    // ── DASHBOARD ────────────────────────────────────────────
+    //DASHBOARD 
     public function dashboard()
     {
         $stats = [
@@ -27,7 +27,7 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'recentHotels', 'recentUsers'));
     }
 
-    // ── HOTELS ───────────────────────────────────────────────
+    //HOTELS 
     public function hotels(Request $request)
     {
         $query = Hotel::query();
@@ -89,7 +89,7 @@ class AdminController extends Controller
         return back()->with('success', 'Hotel deleted.');
     }
 
-    // ── DUYỆT HOTEL ──────────────────────────────────────────
+    // DUYỆT HOTEL 
     public function approveHotel($id)
     {
         Hotel::findOrFail($id)->update([
@@ -109,7 +109,7 @@ class AdminController extends Controller
         return back()->with('success', 'Hotel đã bị từ chối.');
     }
 
-    // ── USERS ────────────────────────────────────────────────
+    //users
     public function users(Request $request)
     {
         $query = User::query();
@@ -135,7 +135,7 @@ class AdminController extends Controller
         return back()->with('success', 'User deleted.');
     }
 
-    // ── OWNER REQUESTS ────────────────────────────────────────
+    //owner request
     public function ownerRequests(Request $request)
     {
         $query = OwnerRequest::with('user');
@@ -193,14 +193,14 @@ class AdminController extends Controller
         return back()->with('success', 'Đã từ chối đơn đăng ký.');
     }
 
-    // ── BOOKINGS ─────────────────────────────────────────────
+    //booking 
     public function bookings()
     {
         $bookings = collect();
         return view('admin.bookings.index', compact('bookings'));
     }
 
-    // ── HELPERS ──────────────────────────────────────────────
+    //helper
     private function validateHotel(Request $request): array
     {
         return $request->validate([

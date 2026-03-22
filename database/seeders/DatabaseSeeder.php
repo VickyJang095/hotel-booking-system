@@ -10,26 +10,38 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOnCreate(['email' => 'admin@test.com'], [
-            'name'     => 'Admin',
-            'password' => bcrypt('123456'),
-            'role'     => 'admin',
-        ]);
+        // ── Users ────────────────────────────────────────────
+        User::updateOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name'     => 'Admin',
+                'password' => bcrypt('123456'),
+                'role'     => 'admin',
+            ]
+        );
 
-        $owner = User::updateOnCreate(['email' => 'owner@test.com'], [
-            'name'     => 'Hotel Owner',
-            'password' => bcrypt('123456'),
-            'role'     => 'hotel_owner',
-        ]);
+        $owner = User::updateOrCreate(
+            ['email' => 'owner@test.com'],
+            [
+                'name'     => 'Hotel Owner',
+                'password' => bcrypt('123456'),
+                'role'     => 'hotel_owner',
+            ]
+        );
 
-        User::updateOnCreate(['email' => 'test@example.com'], [
-            'name'     => 'Test User',
-            'password' => bcrypt('123456'),
-            'role'     => 'user',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name'     => 'Test User',
+                'password' => bcrypt('123456'),
+                'role'     => 'user',
+            ]
+        );
 
+        // ── Hotels ───────────────────────────────────────────
         $this->call(HotelSeeder::class);
 
+        // Gán hotel đầu tiên cho owner@test.com
         Hotel::first()?->update(['owner_id' => $owner->id]);
     }
 }

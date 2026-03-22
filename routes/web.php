@@ -10,8 +10,9 @@ use App\Http\Controllers\OwnerRequestController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Owner\OwnerController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LocaleController;
 
-// ── PUBLIC ──────────────────────────────────────────────────
+//public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/auth/send-code',   [AuthController::class, 'sendOtp'])->name('auth.send-otp');
 Route::post('/auth/verify-code', [AuthController::class, 'verifyOtp'])->name('auth.verify-code');
@@ -26,17 +27,18 @@ Route::get('/login', fn() => redirect('/'))->name('login');
 Route::get('/search',      [SearchController::class, 'search'])->name('hotels.search');
 Route::get('/hotels/{id}', [HotelController::class,  'show'])->name('hotels.show');
 
-// ── BOOKING ─────────────────────────────────────────────────
+// booking route
 Route::get('/hotels/{id}/booking', [BookingController::class, 'showDetails'])->name('booking.details');
 Route::get('/hotels/{id}/payment', [BookingController::class, 'showPayment'])->name('booking.payment');
+Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 
-// ── ĐĂNG KÝ HOTEL OWNER (user đã login) ─────────────────────
+// đăng ký làm chủ khách sạn
 Route::middleware('auth')->group(function () {
     Route::get('/become-owner',  [OwnerRequestController::class, 'create'])->name('owner-request.create');
     Route::post('/become-owner', [OwnerRequestController::class, 'store'])->name('owner-request.store');
 });
 
-// ── ADMIN ────────────────────────────────────────────────────
+// admin
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard',        [AdminController::class, 'dashboard'])->name('dashboard');
 
@@ -62,9 +64,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
     // Bookings
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings');
+    Route::post('/bookings/{id}/confirm', [OwnerController::class, 'confirmBooking'])->name('bookings.confirm');
+    Route::post('/bookings/{id}/cancel',  [OwnerController::class, 'cancelBooking'])->name('bookings.cancel');
 });
 
-// ── HOTEL OWNER ──────────────────────────────────────────────
+// quản lý khách sạn của chủ khách sạn
 Route::prefix('owner')->name('owner.')->middleware(['auth', 'role:hotel_owner'])->group(function () {
     Route::get('/dashboard',        [OwnerController::class, 'dashboard'])->name('dashboard');
     Route::get('/hotel/edit',       [OwnerController::class, 'editHotel'])->name('hotel.edit');
@@ -76,4 +80,23 @@ Route::prefix('owner')->name('owner.')->middleware(['auth', 'role:hotel_owner'])
     Route::get('/rooms/{id}/edit',  [OwnerController::class, 'editRoom'])->name('rooms.edit');
     Route::put('/rooms/{id}',       [OwnerController::class, 'updateRoom'])->name('rooms.update');
     Route::delete('/rooms/{id}',    [OwnerController::class, 'deleteRoom'])->name('rooms.delete');
+    Route::post('/bookings/{id}/confirm', [OwnerController::class, 'confirmBooking'])
+        ->name('bookings.confirm');
+
+    Route::post('/bookings/{id}/cancel', [OwnerController::class, 'cancelBooking'])
+        ->name('bookings.cancel');
+});
+
+//Ngôn ngữ
+Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
+Route::post('/currency/{currency}', [LocaleController::class, 'switchCurrency'])->name('currency.switch');
+
+//profile
+use App\Http\Controllers\ProfileController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',          [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile',          [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/payment',  [ProfileController::class, 'updatePayment'])->name('profile.payment');
+    Route::get('/trips',            [ProfileController::class, 'trips'])->name('profile.trips');
 });

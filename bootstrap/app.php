@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'locale' => \App\Http\Middleware\LocaleMiddleware::class,
+        ]);
+        $middleware->web(append:[
+            \App\Http\Middleware\LocaleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

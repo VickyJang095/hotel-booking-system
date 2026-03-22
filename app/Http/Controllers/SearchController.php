@@ -29,16 +29,19 @@ class SearchController extends Controller
 
         $query = Hotel::query();
 
+        // Chỉ hiển thị hotel đã được duyệt
+        $query->where('status', 'approved');
+
         // Location
         $query->where(function ($q) use ($location) {
             $q->where('city',    'like', "%{$location}%")
-                ->orWhere('address', 'like', "%{$location}%")
-                ->orWhere('name',   'like', "%{$location}%");
+              ->orWhere('address', 'like', "%{$location}%")
+              ->orWhere('name',    'like', "%{$location}%");
         });
 
-        // Sức chứa + phòng trống
+        // Sức chứa
         $query->where('max_guests_per_room', '>=', ceil($guests / $rooms))
-            ->available($checkIn, $checkOut, $rooms);
+              ->where('total_rooms', '>=', $rooms);
 
         // Price range
         if ($request->filled('price_min')) {
@@ -69,41 +72,23 @@ class SearchController extends Controller
         }
 
         // Booking options
-        if ($request->boolean('free_cancellation')) {
-            $query->where('free_cancellation', true);
-        }
-        if ($request->boolean('instant_booking')) {
-            $query->where('instant_booking', true);
-        }
-        if ($request->boolean('pay_at_property')) {
-            $query->where('pay_at_property', true);
-        }
-        if ($request->boolean('pay_later')) {
-            $query->where('pay_later', true);
-        }
-
-        // Wheelchair
-        if ($request->boolean('wheelchair_accessible')) {
-            $query->where('wheelchair_accessible', true);
-        }
+        if ($request->boolean('free_cancellation'))   $query->where('free_cancellation', true);
+        if ($request->boolean('instant_booking'))     $query->where('instant_booking', true);
+        if ($request->boolean('pay_at_property'))     $query->where('pay_at_property', true);
+        if ($request->boolean('pay_later'))           $query->where('pay_later', true);
+        if ($request->boolean('wheelchair_accessible')) $query->where('wheelchair_accessible', true);
 
         // Amenities
         if ($request->filled('amenities')) {
             foreach ((array) $request->amenities as $amenity) {
-                $query->whereRaw(
-                    'JSON_CONTAINS(amenities, ?)',
-                    [json_encode($amenity)]
-                );
+                $query->whereRaw('JSON_CONTAINS(amenities, ?)', [json_encode($amenity)]);
             }
         }
 
         // Payment methods
         if ($request->filled('payment_methods')) {
             foreach ((array) $request->payment_methods as $method) {
-                $query->whereRaw(
-                    'JSON_CONTAINS(payment_methods, ?)',
-                    [json_encode($method)]
-                );
+                $query->whereRaw('JSON_CONTAINS(payment_methods, ?)', [json_encode($method)]);
             }
         }
 
@@ -119,15 +104,15 @@ class SearchController extends Controller
         $nights = max(1, (int) Carbon::parse($checkIn)->diffInDays($checkOut));
 
         $mapHotels = $hotels->map(fn($h) => [
-            'id'       => $h->id,
-            'name'     => $h->name,
-            'lat'      => $h->latitude,
-            'lng'      => $h->longitude,
-            'price'    => $h->price_per_night,
-            'rating'   => $h->rating,
-            'image'    => $h->image_url,
-            'city'     => $h->city,
-            'url'      => route('hotels.show', $h->id),
+            'id'     => $h->id,
+            'name'   => $h->name,
+            'lat'    => $h->latitude,
+            'lng'    => $h->longitude,
+            'price'  => $h->price_per_night,
+            'rating' => $h->rating,
+            'image'  => $h->image_url,
+            'city'   => $h->city,
+            'url'    => route('hotels.show', $h->id),
         ]);
 
         return view('hotels.search-results', compact(
@@ -139,7 +124,7 @@ class SearchController extends Controller
             'adults',
             'children',
             'nights',
-            'mapHotels' 
+            'mapHotels'
         ));
     }
 }

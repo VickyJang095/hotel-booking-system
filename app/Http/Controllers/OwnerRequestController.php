@@ -8,6 +8,7 @@ use App\Models\Hotel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class OwnerRequestController extends Controller
 {
     // Hiển thị form đăng ký
