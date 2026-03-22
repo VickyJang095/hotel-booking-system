@@ -5,20 +5,30 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'Hotel Booking')</title>
     @vite('resources/css/app.css')
+    @stack('styles')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
 <body class="bg-white font-roboto">
 
     @include('partials.header')
 
+
     @yield('content')
 
+    @stack('auth.modal')
+
+    @include('components.locale-modal')
+
     @include('partials.footer')
+
+    @stack('scripts')
 
 </body>
 
