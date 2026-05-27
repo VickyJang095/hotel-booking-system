@@ -1,12 +1,10 @@
 # 🏨 Tripto — Hotel Booking System
 
-> Đồ án cơ sở — Trường Đại học Phenikaa
-
 ---
 
 ## 📋 Giới thiệu
 
-**Tripto** là hệ thống đặt phòng khách sạn trực tuyến được xây dựng trong khuôn khổ môn **Đồ án cơ sở** tại Trường Đại học Phenikaa. Dự án mô phỏng các chức năng cốt lõi của một nền tảng đặt phòng thực tế, bao gồm xác thực người dùng, tìm kiếm và đặt phòng, quản lý đặt chỗ, và giao diện quản trị.
+**Tripto** là hệ thống đặt phòng khách sạn trực tuyến. Dự án mô phỏng các chức năng cốt lõi của một nền tảng đặt phòng thực tế, bao gồm xác thực người dùng, tìm kiếm và đặt phòng, quản lý đặt chỗ, và giao diện quản trị.
 
 ---
 
@@ -22,6 +20,13 @@
 - **Hotel Owner** — Giao diện dành cho chủ khách sạn quản lý tài sản
 
 ---
+
+## Demo
+Link | Video | Image below
+<img width="944" height="531" alt="image" src="https://github.com/user-attachments/assets/aab8038f-dd9a-4804-9c01-b51ba80aface" />
+<img width="944" height="531" alt="image" src="https://github.com/user-attachments/assets/0f5bcb8a-677e-4320-b50d-c9ba27310cdf" />
+<img width="944" height="531" alt="image" src="https://github.com/user-attachments/assets/114df8db-4636-4190-99ed-03a1def0aec0" />
+<img width="944" height="531" alt="image" src="https://github.com/user-attachments/assets/0941856a-3686-42dc-848e-7b3734548e1a" />
 
 ## 🛠️ Công nghệ sử dụng
 
@@ -102,28 +107,6 @@ hotel-booking-system/
 │   └── web.php               # Định nghĩa routes
 └── public/                   # Entry point
 ```
-
----
-
-## 👥 Nhóm thực hiện
-
-| Họ và tên | Mã sinh viên | Vai trò |
-|---|---|---|
-|  |  |  |
-|  |  |  |
-|  |  |  |
-
-> *(Điền thông tin thành viên nhóm vào bảng trên)*
-
----
-
-## 🏫 Thông tin môn học
-
-- **Môn học:** Đồ án cơ sở
-- **Trường:** Đại học Phenikaa
-- **Năm học:** 2024 – 2025
-
----
 
 ## 📄 Giấy phép
 
