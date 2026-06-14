@@ -1,0 +1,27 @@
+<?php
+return [
+    'places_in'          => 'places in',
+    'places_found'       => ':count+ places in :location',
+    'sort_by'            => 'Sort by',
+    'top_reviewed'       => 'Top Reviewed',
+    'best_value'         => 'Best Value',
+    'guest_favourite'    => 'Guest Favourite',
+    'excellent'          => 'Excellent',
+    'very_good'          => 'Very Good',
+    'show_map'           => 'Show Map',
+
+    'filter_by'          => 'Filter by',
+    'price_range'        => 'Price Range',
+    'price_note'         => 'Price per night includes taxes and fees',
+    'minimum'            => 'Minimum',
+    'maximum'            => 'Maximum',
+    'distance'           => 'Distance from city center',
+    'within_km'          => 'Within ',
+    'good'                 => 'Good',
+    'fair'                 => 'Fair',
+    'review_score'       => 'Review Score',
+    'poor'                 => 'Poor',
+    'property_type'      => 'Property Type',
+    'amenities'          => 'Amenities',
+    'am_wifi'       => 'Wi-Fi',
+];

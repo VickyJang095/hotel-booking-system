@@ -3,21 +3,45 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Hotel;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // ── Users ────────────────────────────────────────────
+        User::updateOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name'     => 'Admin',
+                'password' => bcrypt('123456'),
+                'role'     => 'admin',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $owner = User::updateOrCreate(
+            ['email' => 'owner@test.com'],
+            [
+                'name'     => 'Hotel Owner',
+                'password' => bcrypt('123456'),
+                'role'     => 'hotel_owner',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name'     => 'Test User',
+                'password' => bcrypt('123456'),
+                'role'     => 'user',
+            ]
+        );
+
+        // ── Hotels ───────────────────────────────────────────
+        $this->call(HotelSeeder::class);
+
+        // Gán hotel đầu tiên cho owner@test.com
+        Hotel::first()?->update(['owner_id' => $owner->id]);
     }
 }

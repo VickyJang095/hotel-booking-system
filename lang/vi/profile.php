@@ -1,0 +1,60 @@
+<?php
+return [
+    'title'              => 'Thông tin cá nhân',
+    'subtitle'           => 'Quản lý thông tin tài khoản của bạn',
+    'updated'            => 'Thông tin đã được cập nhật.',
+    'payment_updated'    => 'Thông tin thanh toán đã được cập nhật.',
+
+    // Tabs
+    'tab_personal'       => 'Cá nhân',
+    'tab_payment'        => 'Thanh toán',
+    'tab_trips'          => 'Chuyến đi',
+    'tab_security'       => 'Bảo mật',
+
+    // Personal
+    'first_name'         => 'Họ',
+    'last_name'          => 'Tên',
+    'email'              => 'Email',
+    'phone'              => 'Số điện thoại',
+    'date_of_birth'      => 'Ngày sinh',
+    'gender'             => 'Giới tính',
+    'gender_male'        => 'Nam',
+    'gender_female'      => 'Nữ',
+    'gender_other'       => 'Khác',
+    'address'            => 'Địa chỉ',
+    'city'               => 'Thành phố',
+    'avatar'             => 'Ảnh đại diện',
+    'change_avatar'      => 'Đổi ảnh',
+    'save_changes'       => 'Lưu thay đổi',
+
+    // Payment
+    'payment_title'      => 'Thông tin thanh toán',
+    'payment_sub'        => 'Thông tin thẻ được lưu an toàn và mã hóa',
+    'card_holder'        => 'Tên chủ thẻ',
+    'card_number'        => 'Số thẻ',
+    'card_number_ph'     => 'Nhập 16 số thẻ',
+    'card_expiry'        => 'Ngày hết hạn (MM/YY)',
+    'card_type'          => 'Loại thẻ',
+    'billing_address'    => 'Địa chỉ thanh toán',
+    'billing_city'       => 'Thành phố',
+    'billing_postal'     => 'Mã bưu điện',
+    'saved_card'         => 'Thẻ đã lưu',
+    'no_card'            => 'Chưa có thẻ nào được lưu',
+    'add_card'           => 'Thêm thẻ mới',
+    'save_payment'       => 'Lưu thông tin thanh toán',
+
+    // Trips
+    'trips_title'        => 'Chuyến đi của tôi',
+    'trips_sub'          => 'Lịch sử đặt phòng',
+    'no_trips'           => 'Chưa có chuyến đi nào',
+    'no_trips_sub'       => 'Các đặt phòng của bạn sẽ hiển thị tại đây',
+    'booking_code'       => 'Mã đặt phòng',
+    'hotel'              => 'Khách sạn',
+    'check_in'           => 'Nhận phòng',
+    'check_out'          => 'Trả phòng',
+    'nights'             => 'đêm',
+    'total'              => 'Tổng tiền',
+    'status'             => 'Trạng thái',
+    'view_detail'        => 'Chi tiết',
+    'book_again'         => 'Đặt lại',
+];
