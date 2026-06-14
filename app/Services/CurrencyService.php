@@ -15,7 +15,7 @@ class CurrencyService
     {
         return Cache::remember('exchange_rate_usd_vnd', self::CACHE_TTL * 60, function () {
             try {
-                /** @var \Illuminate\Http\Client\Response $response */
+                /** @var \Illuminat e\Http\Client\Response $response */
                 $response = Http::timeout(5)->get('https://api.exchangerate-api.com/v4/latest/USD');
                 if ($response->successful()) {
                     $rate = $response->json('rates.VND');

@@ -22,7 +22,9 @@
 
     @yield('content')
 
-    @stack('auth.modal')
+    @include('auth.modal')
+
+    @include('components.chatbot')
 
     @include('components.locale-modal')
 

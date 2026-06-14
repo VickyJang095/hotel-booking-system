@@ -165,7 +165,7 @@ $ciObj = \Carbon\Carbon::parse($checkIn);
 $coObj = \Carbon\Carbon::parse($checkOut);
 $nights = max(1, $ciObj->diffInDays($coObj));
 
-$pricePerNight = $hotel ? $hotel->price_per_night : 300;
+$pricePerNight = request('price_override') ? (float) request('price_override') : ($hotel->price_per_night ?? 300);
 $roomTotal = $pricePerNight * $nights * $rooms;
 $serviceFee = 4.20;
 $taxes = round($roomTotal * 0.0165, 2);
@@ -198,7 +198,7 @@ $reviewCount = $hotel->review_count ?? 1200;
 
 {{-- MAIN --}}
 <div class="bg-gray-50 min-h-screen py-8">
-    <div class="max-w-5xl mx-auto px-4">
+    <div class="max-w-5xl mx-auto px-4 flex">
         <div class="flex gap-6 items-start">
 
             {{-- LEFT: FORM --}}
@@ -231,15 +231,51 @@ $reviewCount = $hotel->review_count ?? 1200;
                     <h2 class="text-base font-bold text-gray-900 mb-1">{{ __('booking.guest_info') }}</h2>
                     <p class="text-sm text-gray-400 mb-5">{{ __('booking.guest_id_note') }}</p>
 
+                    @auth
+                    {{-- ĐÃ ĐĂNG NHẬP: hiển thị thông tin, không cần nhập --}}
+                    <div class="guest-block bg-blue-50 border-blue-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-900">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-blue-600 font-medium">✓ {{ __('booking.logged_in_as') ?? 'Đang đặt với tài khoản của bạn' }}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.email_address') }}</label>
+                                <div class="form-input bg-gray-50 text-gray-600 select-none">{{ Auth::user()->email }}</div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.phone') }}</label>
+                                <div class="form-input bg-gray-50 text-gray-600 select-none">
+                                    {{ Auth::user()->phone ?? __('booking.not_updated') ?? 'Chưa cập nhật' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endauth
+
                     <form id="bookingForm" action="{{ route('booking.payment', $hotel->id ?? 0) }}" method="GET">
-                        <input type="hidden" name="guest_name">
-                        <input type="hidden" name="guest_email">
-                        <input type="hidden" name="guest_phone">
+                        {{-- Hidden fields chung --}}
                         <input type="hidden" name="check_in" value="{{ $checkIn }}">
                         <input type="hidden" name="check_out" value="{{ $checkOut }}">
                         <input type="hidden" name="adults" value="{{ $adults }}">
                         <input type="hidden" name="rooms" value="{{ $rooms }}">
                         <input type="hidden" name="children" value="{{ $children }}">
+
+                        @auth
+                        {{-- Đã đăng nhập: truyền thẳng từ user, không cần input --}}
+                        <input type="hidden" name="guest_name" value="{{ Auth::user()->name }}">
+                        <input type="hidden" name="guest_email" value="{{ Auth::user()->email }}">
+                        <input type="hidden" name="guest_phone" value="{{ Auth::user()->phone ?? '' }}">
+                        @else
+                        {{-- Chưa đăng nhập: phải điền tay --}}
+                        <input type="hidden" name="guest_name">
+                        <input type="hidden" name="guest_email">
+                        <input type="hidden" name="guest_phone">
 
                         <div class="guest-block" id="guest-1-block">
                             <div class="flex items-center justify-between mb-4">
@@ -260,19 +296,12 @@ $reviewCount = $hotel->review_count ?? 1200;
                                 <div class="relative">
                                     <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.last_name') }}</label>
                                     <input type="text" name="guests[0][last_name]" placeholder="Văn A" class="form-input pr-10" required>
-                                    <button type="button" class="absolute right-3 top-[34px] text-gray-300 hover:text-red-400 transition">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.email_address') }}</label>
-                                    <div class="relative">
-                                        <input type="email" name="guests[0][email]" placeholder="email@gmail.com" class="form-input pl-9" required>
-                                    </div>
+                                    <input type="email" name="guests[0][email]" placeholder="email@gmail.com" class="form-input" required>
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500 mb-1.5 block">{{ __('booking.phone') }}</label>
@@ -283,25 +312,23 @@ $reviewCount = $hotel->review_count ?? 1200;
                                                 <option value="+84">+84</option>
                                                 <option value="+1">+1</option>
                                                 <option value="+44">+44</option>
-                                                <option value="+34">+34</option>
-                                                <option value="+33">+33</option>
-                                                <option value="+49">+49</option>
                                                 <option value="+81">+81</option>
                                                 <option value="+86">+86</option>
                                             </select>
                                         </div>
-                                        <input type="tel" name="guests[0][phone]" placeholder="090 123 4567" class="phone-input">
+                                        <input type="tel" name="guests[0][phone]" placeholder="090 123 4567" class="phone-input" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div id="extra-guests"></div>
+                        @endauth
 
                         {{-- SPECIAL REQUESTS --}}
                         <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
                             <h2 class="text-base font-bold text-gray-900 mb-1">
-                                {{ __('booking.special_requests') }} <span class="text-gray-400 font-normal text-sm">({{ __('booking.optional') }})</span>
+                                {{ __('booking.special_requests') }}
+                                <span class="text-gray-400 font-normal text-sm">({{ __('booking.optional') }})</span>
                             </h2>
                             <p class="text-sm text-gray-400 mb-4">{{ __('booking.special_requests_note') }}</p>
                             <textarea name="special_requests" rows="4"
@@ -346,7 +373,9 @@ $reviewCount = $hotel->review_count ?? 1200;
                                     {{ __('booking.non_refundable') }}
                                     @endif
                                 </p>
-                                <a href="#" class="text-sm text-blue-600 font-semibold hover:underline mt-1 inline-block">{{ __('booking.learn_more') }}</a>
+                                <a href="#" class="text-sm text-blue-600 font-semibold hover:underline mt-1 inline-block">
+                                    {{ __('booking.learn_more') }}
+                                </a>
                             </div>
                         </div>
 
@@ -355,89 +384,89 @@ $reviewCount = $hotel->review_count ?? 1200;
                         </div>
                     </form>
                 </div>
-            </div>
+                <div id="extra-guests"></div>
 
-            {{-- RIGHT: SUMMARY --}}
-            <div class="w-72 shrink-0 hidden lg:block">
-                <div class="summary-card">
-                    <div class="p-4 border-b border-gray-100">
-                        <div class="flex gap-3">
-                            <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                                <img src="{{ $hotel ? $hotel->image_url : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80' }}"
-                                    alt="{{ $hotel->name ?? 'Hotel' }}" class="w-full h-full object-cover"
-                                    onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80'">
+        {{-- RIGHT: SUMMARY --}}
+        <div class="w-72 shrink-0 hidden lg:block">
+            <div class="summary-card">
+                <div class="p-4 border-b border-gray-100">
+                    <div class="flex gap-3">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0">
+                            <img src="{{ $hotel ? $hotel->image_url : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80' }}"
+                                alt="{{ $hotel->name ?? 'Hotel' }}" class="w-full h-full object-cover"
+                                onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80'">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-gray-900 leading-tight mb-1">{{ $hotel->name ?? 'Khách sạn' }}</p>
+                            <div class="flex items-center gap-0.5 mb-1">
+                                @for($s=0;$s<($hotel->star_rating ?? 4);$s++)
+                                    <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                    @endfor
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-bold text-gray-900 leading-tight mb-1">{{ $hotel->name ?? 'Khách sạn' }}</p>
-                                <div class="flex items-center gap-0.5 mb-1">
-                                    @for($s=0;$s<($hotel->star_rating ?? 4);$s++)
-                                        <svg class="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                        </svg>
-                                        @endfor
-                                </div>
-                                <p class="text-xs text-gray-400">{{ $hotel->city ?? 'Việt Nam' }}</p>
-                                <div class="flex items-center gap-1.5 mt-1">
-                                    <span class="bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">{{ $hotel->rating ?? '5.0' }}</span>
-                                    <span class="text-xs font-semibold text-blue-600">{{ $ratingLabel }}</span>
-                                    <span class="text-xs text-gray-400">{{ number_format($reviewCount) }} {{ __('search.reviews') }}</span>
-                                </div>
+                            <p class="text-xs text-gray-400">{{ $hotel->city ?? 'Việt Nam' }}</p>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span class="bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-md">{{ $hotel->rating ?? '5.0' }}</span>
+                                <span class="text-xs font-semibold text-blue-600">{{ $ratingLabel }}</span>
+                                <span class="text-xs text-gray-400">{{ number_format($reviewCount) }} {{ __('search.reviews') }}</span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="p-4 border-b border-gray-100">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    {{ __('booking.check_in') }}
-                                </div>
-                                <p class="text-sm font-semibold text-gray-800">{{ $ciObj->format('d/m/Y') }}</p>
+                <div class="p-4 border-b border-gray-100">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{ __('booking.check_in') }}
                             </div>
-                            <div>
-                                <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    {{ __('booking.check_out') }}
-                                </div>
-                                <p class="text-sm font-semibold text-gray-800">{{ $coObj->format('d/m/Y') }}</p>
-                            </div>
+                            <p class="text-sm font-semibold text-gray-800">{{ $ciObj->format('d/m/Y') }}</p>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-gray-100">
-                            <p class="text-xs text-gray-500 font-semibold mb-0.5">{{ __('booking.rooms_and_guests') }}</p>
-                            <p class="text-sm text-gray-700">{{ $rooms }} {{ __('booking.room_unit') }}, {{ $adults }} {{ __('booking.adult_unit') }}{{ $children > 0 ? ', '.$children.' '.(__('booking.child_unit')) : '' }}</p>
+                        <div>
+                            <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{ __('booking.check_out') }}
+                            </div>
+                            <p class="text-sm font-semibold text-gray-800">{{ $coObj->format('d/m/Y') }}</p>
                         </div>
                     </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <p class="text-xs text-gray-500 font-semibold mb-0.5">{{ __('booking.rooms_and_guests') }}</p>
+                        <p class="text-sm text-gray-700">{{ $rooms }} {{ __('booking.room_unit') }}, {{ $adults }} {{ __('booking.adult_unit') }}{{ $children > 0 ? ', '.$children.' '.(__('booking.child_unit')) : '' }}</p>
+                    </div>
+                </div>
 
-                    <div class="p-4">
-                        <p class="text-sm font-bold text-gray-900 mb-3">{{ __('booking.price_details') }}</p>
-                        <div class="space-y-2 mb-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">{{ $currency->formatPrice($pricePerNight) }} x {{ $nights }} {{ __('search.nights_label') }}</span>
-                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($roomTotal) }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">{{ __('booking.service_fee') }}</span>
-                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($serviceFee) }}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">{{ __('booking.taxes') }}</span>
-                                <span class="font-medium text-gray-800">{{ $currency->formatPrice($taxes) }}</span>
-                            </div>
+                <div class="p-4">
+                    <p class="text-sm font-bold text-gray-900 mb-3">{{ __('booking.price_details') }}</p>
+                    <div class="space-y-2 mb-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">{{ $currency->formatPrice($pricePerNight) }} x {{ $nights }} {{ __('search.nights_label') }}</span>
+                            <span class="font-medium text-gray-800">{{ $currency->formatPrice($roomTotal) }}</span>
                         </div>
-                        <div class="border-t border-gray-200 pt-3 flex justify-between">
-                            <span class="text-sm font-bold text-gray-900">{{ __('booking.total') }}</span>
-                            <span class="text-sm font-bold text-gray-900">{{ $currency->formatPrice($grandTotal) }}</span>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">{{ __('booking.service_fee') }}</span>
+                            <span class="font-medium text-gray-800">{{ $currency->formatPrice($serviceFee) }}</span>
                         </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">{{ __('booking.taxes') }}</span>
+                            <span class="font-medium text-gray-800">{{ $currency->formatPrice($taxes) }}</span>
+                        </div>
+                    </div>
+                    <div class="border-t border-gray-200 pt-3 flex justify-between">
+                        <span class="text-sm font-bold text-gray-900">{{ __('booking.total') }}</span>
+                        <span class="text-sm font-bold text-gray-900">{{ $currency->formatPrice($grandTotal) }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection
 

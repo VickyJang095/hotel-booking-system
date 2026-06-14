@@ -11,6 +11,7 @@ return [
     'rooms_guests'       => 'Phòng & Khách',
     'search_btn'         => 'Tìm kiếm',
     'default_guests'     => '1 phòng, 1 người lớn, 0 trẻ em',
+    'select_dates'      => 'Vui lòng chọn ngày nhận phòng và trả phòng.',
 
     // Guests dropdown
     'rooms'              => 'Phòng',
@@ -20,6 +21,9 @@ return [
     'adult'              => 'người lớn',
     'adults_plural'      => 'người lớn',
     'children'           => 'trẻ em',
+    'age'                => 'Tuổi',
+    'done'               => 'Xong',
+    'loading'            => 'Đang tải...',
 
     // Validation
     'fill_all_fields'    => 'Vui lòng điền đầy đủ thông tin.',

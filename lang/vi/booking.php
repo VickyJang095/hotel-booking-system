@@ -153,4 +153,6 @@ return [
     'total_bookings' => 'Tổng số đặt phòng',
     'total_revenue' => 'Tổng doanh thu',
     'no_bookings_sub' => 'Bạn chưa có đặt phòng nào. Hãy bắt đầu khám phá và đặt phòng ngay hôm nay!',
+    'logged_in_as' => 'Bạn đang đăng nhập với :email',
+    'not_updated' => 'Không có cập nhật nào cho đặt phòng này.',
 ];

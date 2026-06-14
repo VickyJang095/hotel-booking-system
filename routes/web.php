@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Owner\OwnerController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ChatbotController;
 
 //public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -100,3 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/payment',  [ProfileController::class, 'updatePayment'])->name('profile.payment');
     Route::get('/trips',            [ProfileController::class, 'trips'])->name('profile.trips');
 });
+// chatbot
+Route::get('/chatbot', fn() => redirect('/'));
+Route::post('/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::get('/chatbot/suggestions', [ChatbotController::class, 'suggestions'])
+    ->name('chatbot.suggestions');

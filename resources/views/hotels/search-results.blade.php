@@ -101,45 +101,176 @@ $currency = app(\App\Services\CurrencyService::class);
 @endphp
 
 {{-- SEARCH BAR --}}
-<div class="sticky top-0 z-40 flex items-center justify-between -mt-22">
-    <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        <form action="{{ route('hotels.search') }}" method="GET"
-            class="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden divide-x divide-gray-200 flex-1 max-w-2xl">
-            <div class="flex items-center gap-2 px-2 mx-2 py-2.5 flex-1 min-w-0">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <input type="text" name="location" value="{{ $location }}"
-                    class="bg-transparent text-[18px] font-semibold text-gray-800 outline-none w-full placeholder-gray-400"
-                    placeholder="{{ __('home.search_location') }}">
+<form action="{{ route('hotels.search') }}" method="GET"
+    class="bg-white flex -mt-20 z-40 relative border border-gray-200 rounded-xl shadow-sm divide-x divide-gray-200 max-w-2xl mx-auto">
+
+    {{-- Location --}}
+    <div class="flex items-center gap-2 px-2 mx-2 py-2.5 flex-1 min-w-0 relative">
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <input type="hidden" name="location" id="locationNormalized">
+        <input type="text" id="locationInput"
+            autocomplete="off"
+            class="bg-transparent text-[18px] font-semibold text-gray-800 outline-none w-full placeholder-gray-400"
+            placeholder="{{ __('home.search_location') }}">
+
+        {{-- Dropdown --}}
+        <div id="locationSuggestions"
+            class="hidden absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+
+            {{-- Popular destinations (hiện khi chưa gõ) --}}
+            <div id="popularList">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 pt-3 pb-1">Điểm đến nổi bật</p>
+                @php
+                $popular = [
+                ['name' => 'Hà Nội', 'sub' => 'Thủ đô Việt Nam', 'icon' => '🏛️'],
+                ['name' => 'Hồ Chí Minh', 'sub' => 'Thành phố sôi động nhất', 'icon' => '🌆'],
+                ['name' => 'Đà Nẵng', 'sub' => 'Thành phố biển miền Trung', 'icon' => '🏖️'],
+                ['name' => 'Hội An', 'sub' => 'Phố cổ UNESCO', 'icon' => '🏮'],
+                ['name' => 'Phú Quốc', 'sub' => 'Đảo ngọc Việt Nam', 'icon' => '🌴'],
+                ['name' => 'Nha Trang', 'sub' => 'Thiên đường biển xanh', 'icon' => '🐚'],
+                ['name' => 'Sapa', 'sub' => 'Ruộng bậc thang & sương mù','icon' => '⛰️'],
+                ['name' => 'Huế', 'sub' => 'Cố đô lịch sử', 'icon' => '🏯'],
+                ['name' => 'Hạ Long', 'sub' => 'Kỳ quan thiên nhiên thế giới','icon' => '⛵'],
+                ['name' => 'Đà Lạt', 'sub' => 'Thành phố ngàn hoa', 'icon' => '🌸'],
+                ];
+                @endphp
             </div>
-            <div class="hidden lg:flex items-center gap-2 px-5 py-2.5 shrink-0">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="text-[18px] font-semibold text-gray-800 whitespace-nowrap">
-                    {{ \Carbon\Carbon::parse($checkIn)->format('d M') }} - {{ \Carbon\Carbon::parse($checkOut)->format('d M') }}
-                </span>
-                <input type="hidden" name="check_in" value="{{ $checkIn }}">
-                <input type="hidden" name="check_out" value="{{ $checkOut }}">
+
+            {{-- Search results (hiện khi gõ) --}}
+            <div id="searchList" class="hidden"></div>
+
+            {{-- Loading --}}
+            <div id="locationLoading" class="hidden px-4 py-4 text-center">
+                <div class="inline-flex items-center gap-2 text-sm text-gray-400">
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    ({{ __('home.loading') }}...)
+                </div>
             </div>
-            <div class="hidden lg:flex items-center gap-2 px-5 py-2.5 shrink-0">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m6-4a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span class="text-[18px] font-semibold text-gray-800 whitespace-nowrap">{{ $adults + $children }} {{ __('search.guests') }}</span>
-                <input type="hidden" name="rooms" value="{{ $rooms }}">
-                <input type="hidden" name="adults" value="{{ $adults }}">
-                <input type="hidden" name="children" value="{{ $children }}">
-            </div>
-            <button type="submit" class="m-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-3 transition shrink-0 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </button>
-        </form>
+        </div>
     </div>
-</div>
+
+    {{-- Dates --}}
+    <div class="hidden lg:flex items-center gap-2 px-5 py-2.5 shrink-0 relative cursor-pointer group"
+        onclick="toggleDropdown('dateDropdown')">
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="text-[18px] font-semibold text-gray-800 whitespace-nowrap group-hover:text-blue-600 transition">
+            {{ \Carbon\Carbon::parse($checkIn)->format('d M') }} - {{ \Carbon\Carbon::parse($checkOut)->format('d M') }}
+        </span>
+
+        {{-- Date dropdown --}}
+        <div id="dateDropdown"
+            class="hidden absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 z-50 w-72"
+            onclick="event.stopPropagation()">
+            <p class="text-xs font-semibold text-gray-400 tracking-wide mb-3">{{ __('home.select_dates') }}</p>
+            <div class="flex flex-col gap-3">
+                <div>
+                    <label class="text-xs text-gray-500 mb-1 block">Check-in</label>
+                    <input type="date" id="checkInInput" name="check_in" value="{{ $checkIn }}"
+                        min="{{ date('Y-m-d') }}"
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-400 transition"
+                        onchange="updateCheckInDisplay(this.value)">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 mb-1 block">Check-out</label>
+                    <input type="date" id="checkOutInput" name="check_out" value="{{ $checkOut }}"
+                        min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-blue-400 transition"
+                        onchange="updateCheckOutDisplay(this.value)">
+                </div>
+            </div>
+            <button type="button" onclick="toggleDropdown('dateDropdown')"
+                class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-xl transition">
+                Done
+            </button>
+        </div>
+    </div>
+
+    {{-- Guests --}}
+    <div class="hidden lg:flex items-center gap-2 px-5 py-2.5 shrink-0 relative cursor-pointer group"
+        onclick="toggleDropdown('guestDropdown')">
+        <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m6-4a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <span id="guestLabel" class="text-[18px] font-semibold text-gray-800 whitespace-nowrap group-hover:text-blue-600 transition">
+            {{ $adults + $children }} {{ __('search.guests') }}
+        </span>
+
+        {{-- Hidden inputs --}}
+        <input type="hidden" name="rooms" id="roomsInput" value="{{ $rooms }}">
+        <input type="hidden" name="adults" id="adultsInput" value="{{ $adults }}">
+        <input type="hidden" name="children" id="childrenInput" value="{{ $children }}">
+
+        {{-- Guest dropdown --}}
+        <div id="guestDropdown"
+            class="hidden absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 z-50 w-72"
+            onclick="event.stopPropagation()">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">{{ __('home.rooms_guests') }}</p>
+
+            {{-- Rooms --}}
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">{{ __('home.rooms') }}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="adjustCount('rooms', -1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">−</button>
+                    <span id="roomsDisplay" class="w-4 text-center font-semibold text-gray-800">{{ $rooms }}</span>
+                    <button type="button" onclick="adjustCount('rooms', 1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">+</button>
+                </div>
+            </div>
+
+            {{-- Adults --}}
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">{{ __('home.adults') }}</p>
+                    <p class="text-xs text-gray-400">{{ __('home.age') }} >13</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="adjustCount('adults', -1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">−</button>
+                    <span id="adultsDisplay" class="w-4 text-center font-semibold text-gray-800">{{ $adults }}</span>
+                    <button type="button" onclick="adjustCount('adults', 1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">+</button>
+                </div>
+            </div>
+
+            {{-- Children --}}
+            <div class="flex items-center justify-between py-2">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">{{ __('home.children')}}</p>
+                    <p class="text-xs text-gray-400">{{ __('home.age') }} 0–13</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="adjustCount('children', -1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">−</button>
+                    <span id="childrenDisplay" class="w-4 text-center font-semibold text-gray-800">{{ $children }}</span>
+                    <button type="button" onclick="adjustCount('children', 1)"
+                        class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-400 hover:text-blue-600 transition font-bold text-lg">+</button>
+                </div>
+            </div>
+
+            <button type="button" onclick="toggleDropdown('guestDropdown')"
+                class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-xl transition">
+                {{ __('home.done') }}
+            </button>
+        </div>
+    </div>
+
+    {{-- Submit --}}
+    <button type="submit" class="m-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-3 transition shrink-0 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+    </button>
+</form>
 
 {{-- MAP MODAL --}}
 <div id="mapModal" class="fixed inset-0 z-50 hidden">
@@ -928,6 +1059,520 @@ $currency = app(\App\Services\CurrencyService::class);
         });
         loadLeaflet(initMiniMap);
     });
+
+    function toggleDropdown(id) {
+        const el = document.getElementById(id);
+        const allDropdowns = ['dateDropdown', 'guestDropdown'];
+        allDropdowns.forEach(d => {
+            if (d !== id) document.getElementById(d)?.classList.add('hidden');
+        });
+        el.classList.toggle('hidden');
+    }
+
+    // Đóng dropdown khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('[onclick^="toggleDropdown"]') && !e.target.closest('#dateDropdown') && !e.target.closest('#guestDropdown')) {
+            document.getElementById('dateDropdown')?.classList.add('hidden');
+            document.getElementById('guestDropdown')?.classList.add('hidden');
+        }
+    });
+
+    // Cập nhật hiển thị ngày
+    function updateCheckInDisplay(val) {
+        const checkOut = document.getElementById('checkOutInput');
+        if (val >= checkOut.value) {
+            const next = new Date(val);
+            next.setDate(next.getDate() + 1);
+            checkOut.value = next.toISOString().split('T')[0];
+        }
+        checkOut.min = new Date(new Date(val).getTime() + 86400000).toISOString().split('T')[0];
+        updateDateLabel();
+    }
+
+    function updateCheckOutDisplay(val) {
+        updateDateLabel();
+    }
+
+    function updateDateLabel() {
+        const ci = document.getElementById('checkInInput').value;
+        const co = document.getElementById('checkOutInput').value;
+        if (!ci || !co) return;
+        const fmt = (d) => {
+            const dt = new Date(d);
+            return dt.getDate() + ' ' + dt.toLocaleString('en', {
+                month: 'short'
+            });
+        };
+        document.querySelector('[onclick="toggleDropdown(\'dateDropdown\')"] span').textContent = fmt(ci) + ' - ' + fmt(co);
+    }
+
+    // Điều chỉnh số khách/phòng
+    const limits = {
+        rooms: [1, 10],
+        adults: [1, 16],
+        children: [0, 10]
+    };
+
+    function adjustCount(type, delta) {
+        const input = document.getElementById(type + 'Input');
+        const display = document.getElementById(type + 'Display');
+        let val = parseInt(input.value) + delta;
+        val = Math.max(limits[type][0], Math.min(limits[type][1], val));
+        input.value = val;
+        display.textContent = val;
+        updateGuestLabel();
+    }
+
+    function updateGuestLabel() {
+        const adults = parseInt(document.getElementById('adultsInput').value);
+        const children = parseInt(document.getElementById('childrenInput').value);
+        document.getElementById('guestLabel').textContent = (adults + children) + ' Guests';
+    }
+
+    // ===== LOCATION AUTOCOMPLETE (Nominatim) =====
+    (function() {
+        const input = document.getElementById('locationInput');
+        const dropdown = document.getElementById('locationSuggestions');
+        const popularList = document.getElementById('popularList');
+        const searchList = document.getElementById('searchList');
+        const loading = document.getElementById('locationLoading');
+
+        if (!input) return;
+
+        let debounceTimer = null;
+
+        // Click vào input → hiện popular
+        input.addEventListener('focus', function() {
+            if (!this.value.trim()) {
+                popularList.classList.remove('hidden');
+                searchList.classList.add('hidden');
+                loading.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+            }
+        });
+        // ===== NORMALIZE tiếng Việt =====
+        function normalizeVi(str) {
+            return str.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // bỏ dấu
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .toLowerCase().trim();
+        }
+
+        input.addEventListener('input', function() {
+            const raw = this.value.trim();
+            const query = normalizeVi(raw);
+
+            if (!raw) {
+                // Chưa gõ gì → hiện popular
+                popularList.classList.remove('hidden');
+                searchList.classList.add('hidden');
+                loading.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            // Lọc popular list theo normalized string trước
+            const matched = filterPopular(query);
+
+            if (matched.length) {
+                // Có kết quả trong popular → hiện luôn, không cần gọi API
+                renderPopularFiltered(matched, raw);
+                searchList.classList.add('hidden');
+                loading.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+            }
+
+            // Song song gọi Nominatim (debounce)
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => searchNominatim(raw, query), 350);
+        });
+        // Lọc popular theo query normalize
+        function filterPopular(normalizedQuery) {
+            const popularData = [{
+                    name: 'Hà Nội',
+                    sub: 'Thủ đô Việt Nam'
+                },
+                {
+                    name: 'Hồ Chí Minh',
+                    sub: 'Thành phố sôi động nhất'
+                },
+                {
+                    name: 'Đà Nẵng',
+                    sub: 'Thành phố biển miền Trung'
+                },
+                {
+                    name: 'Hội An',
+                    sub: 'Phố cổ UNESCO'
+                },
+                {
+                    name: 'Phú Quốc',
+                    sub: 'Đảo ngọc Việt Nam'
+                },
+                {
+                    name: 'Nha Trang',
+                    sub: 'Thiên đường biển xanh'
+                },
+                {
+                    name: 'Sapa',
+                    sub: 'Ruộng bậc thang & sương mù'
+                },
+                {
+                    name: 'Huế',
+                    sub: 'Cố đô lịch sử'
+                },
+                {
+                    name: 'Hạ Long',
+                    sub: 'Kỳ quan thiên nhiên thế giới'
+                },
+                {
+                    name: 'Đà Lạt',
+                    sub: 'Thành phố ngàn hoa'
+                },
+            ];
+
+            return popularData.filter(p =>
+                normalizeVi(p.name).includes(normalizedQuery) ||
+                normalizeVi(p.sub).includes(normalizedQuery)
+            );
+        }
+
+        // Render popular đã filter (highlight phần match)
+        function renderPopularFiltered(items, rawQuery) {
+            popularList.innerHTML = `<p class="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 pt-3 pb-1">Gợi ý</p>`;
+
+            items.forEach(p => {
+                // Highlight match
+                const highlighted = highlightMatch(p.name, rawQuery);
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition border-b border-gray-50 last:border-0';
+                item.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900 truncate">${highlighted}</p>
+                <p class="text-xs text-gray-400">${p.sub}</p>
+            </div>
+            <svg class="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>`;
+
+                item.addEventListener('click', () => {
+                    input.value = p.name;
+                    dropdown.classList.add('hidden');
+                    input.closest('form').submit();
+                });
+
+                popularList.appendChild(item);
+            });
+
+            popularList.classList.remove('hidden');
+        }
+
+        // Highlight phần text khớp (kể cả không dấu)
+        function highlightMatch(text, rawQuery) {
+            const normText = normalizeVi(text);
+            const normQuery = normalizeVi(rawQuery);
+            const idx = normText.indexOf(normQuery);
+            if (idx === -1) return text;
+
+            // Map vị trí từ normalized → original
+            let origIdx = 0,
+                normIdx = 0;
+            let start = -1,
+                end = -1;
+            const chars = [...text];
+
+            for (let i = 0; i < chars.length; i++) {
+                const normChar = normalizeVi(chars[i]);
+                if (normIdx === idx) start = i;
+                if (normIdx === idx + normQuery.length) {
+                    end = i;
+                    break;
+                }
+                normIdx += normChar.length;
+            }
+            if (end === -1) end = chars.length;
+
+            return text.slice(0, start) +
+                `<span class="text-blue-600">${text.slice(start, end)}</span>` +
+                text.slice(end);
+        }
+
+        async function searchNominatim(raw, normalizedQuery) {
+            // Gửi cả query gốc lẫn query không dấu để tăng hit rate
+            const queries = [raw];
+            if (normalizedQuery !== raw) queries.push(normalizedQuery);
+
+            try {
+                popularList.classList.add('hidden');
+                searchList.classList.add('hidden');
+                loading.classList.remove('hidden');
+                dropdown.classList.remove('hidden');
+
+                // Fetch song song cả 2 query
+                const results = await Promise.all(
+                    queries.map(q =>
+                        fetch(`https://nominatim.openstreetmap.org/search?` + new URLSearchParams({
+                            q,
+                            format: 'json',
+                            addressdetails: 1,
+                            limit: 5,
+                            countrycodes: 'vn',
+                            'accept-language': 'vi',
+                        }), {
+                            headers: {
+                                'Accept-Language': 'vi'
+                            }
+                        })
+                        .then(r => r.json())
+                    )
+                );
+
+                // Gộp + dedupe theo place_id
+                const seen = new Set();
+                const merged = results.flat().filter(p => {
+                    if (seen.has(p.place_id)) return false;
+                    seen.add(p.place_id);
+                    return true;
+                }).slice(0, 7);
+
+                loading.classList.add('hidden');
+                renderResults(merged);
+            } catch (e) {
+                loading.classList.add('hidden');
+                searchList.innerHTML = `<p class="px-4 py-3 text-sm text-gray-400 text-center">Không tìm thấy kết quả</p>`;
+                searchList.classList.remove('hidden');
+            }
+        }
+
+        function renderResults(data) {
+            searchList.innerHTML = '';
+
+            if (!data.length) {
+                searchList.innerHTML = `
+            <div class="px-4 py-5 text-center">
+                <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <p class="text-sm text-gray-400">Không tìm thấy địa điểm</p>
+            </div>`;
+                searchList.classList.remove('hidden');
+                return;
+            }
+
+            data.forEach(place => {
+                const addr = place.address || {};
+                const main = addr.city || addr.town || addr.village || addr.county || place.display_name.split(',')[0];
+                const secondary = [addr.state, addr.country].filter(Boolean).join(', ');
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition border-b border-gray-50 last:border-0';
+                item.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900 truncate">${main}</p>
+                <p class="text-xs text-gray-400 truncate">${secondary}</p>
+            </div>
+            <svg class="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>`;
+
+                item.addEventListener('click', () => {
+                    input.value = main;
+                    dropdown.classList.add('hidden');
+                    input.closest('form').submit();
+                });
+
+                searchList.appendChild(item);
+            });
+
+            searchList.classList.remove('hidden');
+        }
+
+        // Click popular item
+        document.querySelectorAll('.popular-item').forEach(item => {
+            item.addEventListener('click', function() {
+                input.value = this.dataset.name;
+                dropdown.classList.add('hidden');
+                input.closest('form').submit();
+            });
+        });
+
+        // Đóng khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            if (!input.closest('div').contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Phím tắt Escape
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') dropdown.classList.add('hidden');
+        });
+
+        function syncNormalized(val) {
+            document.getElementById('locationNormalized').value = normalizeVi(val);
+        }
+
+        // Gọi khi gõ
+        input.addEventListener('input', function() {
+            syncNormalized(this.value);
+        });
+
+        item.addEventListener('click', () => {
+            input.value = p.name;
+            syncNormalized(p.name);
+            dropdown.classList.add('hidden');
+            input.closest('form').submit();
+        });
+        // ===== LOCATION AUTOCOMPLETE (Nominatim) =====
+        (function() {
+            const input = document.getElementById('locationInput');
+            const dropdown = document.getElementById('locationSuggestions');
+            const popularList = document.getElementById('popularList');
+            const searchList = document.getElementById('searchList');
+            const loading = document.getElementById('locationLoading');
+
+            if (!input) return;
+
+            let debounceTimer = null;
+
+            // Click vào input → hiện popular
+            input.addEventListener('focus', function() {
+                if (!this.value.trim()) {
+                    popularList.classList.remove('hidden');
+                    searchList.classList.add('hidden');
+                    loading.classList.add('hidden');
+                    dropdown.classList.remove('hidden');
+                }
+            });
+
+            // Gõ → search Nominatim
+            input.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                if (!query) {
+                    popularList.classList.remove('hidden');
+                    searchList.classList.add('hidden');
+                    loading.classList.add('hidden');
+                    dropdown.classList.remove('hidden');
+                    return;
+                }
+
+                // Debounce 350ms tránh spam API
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => searchNominatim(query), 350);
+            });
+
+            async function searchNominatim(query) {
+                popularList.classList.add('hidden');
+                searchList.classList.add('hidden');
+                loading.classList.remove('hidden');
+                dropdown.classList.remove('hidden');
+
+                try {
+                    const url = `https://nominatim.openstreetmap.org/search?` + new URLSearchParams({
+                        q: query,
+                        format: 'json',
+                        addressdetails: 1,
+                        limit: 7,
+                        countrycodes: 'vn', // Ưu tiên Việt Nam
+                        'accept-language': 'vi',
+                    });
+
+                    const res = await fetch(url, {
+                        headers: {
+                            'Accept-Language': 'vi'
+                        }
+                    });
+                    const data = await res.json();
+
+                    loading.classList.add('hidden');
+                    renderResults(data);
+                } catch (e) {
+                    loading.classList.add('hidden');
+                    searchList.innerHTML = `<p class="px-4 py-3 text-sm text-gray-400">Không tìm thấy kết quả</p>`;
+                    searchList.classList.remove('hidden');
+                }
+            }
+
+            function renderResults(data) {
+                searchList.innerHTML = '';
+
+                if (!data.length) {
+                    searchList.innerHTML = `<p class="px-4 py-3 text-sm text-gray-400 text-center">Không tìm thấy địa điểm</p>`;
+                    searchList.classList.remove('hidden');
+                    return;
+                }
+
+                data.forEach(place => {
+                    const addr = place.address || {};
+                    const main = addr.city || addr.town || addr.village || addr.county || place.display_name.split(',')[0];
+                    const secondary = [addr.state, addr.country].filter(Boolean).join(', ');
+                    const type = place.type;
+
+                    // Icon theo loại địa điểm
+                    const iconMap = {
+                        city: '🏙️',
+                        town: '🏘️',
+                        village: '🏡',
+                        administrative: '📍',
+                        tourism: '🏛️',
+                        hotel: '🏨',
+                    };
+                    const icon = iconMap[type] || '📍';
+
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition border-b border-gray-50 last:border-0';
+                    item.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-base">${icon}</div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-gray-900 truncate">${main}</p>
+                    <p class="text-xs text-gray-400 truncate">${secondary}</p>
+                </div>`;
+
+                    item.addEventListener('click', () => {
+                        input.value = main;
+                        dropdown.classList.add('hidden');
+                        input.closest('form').submit();
+                    });
+
+                    searchList.appendChild(item);
+                });
+
+                searchList.classList.remove('hidden');
+            }
+
+            // Click popular item
+            document.querySelectorAll('.popular-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    input.value = this.dataset.name;
+                    dropdown.classList.add('hidden');
+                    input.closest('form').submit();
+                });
+            });
+
+            // Đóng khi click ra ngoài
+            document.addEventListener('click', function(e) {
+                if (!input.closest('div').contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Phím tắt Escape
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') dropdown.classList.add('hidden');
+            });
+        })();
+    })();
 </script>
 
 {{-- Map data - tránh Blade syntax trong JS --}}

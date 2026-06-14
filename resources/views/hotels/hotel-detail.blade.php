@@ -492,7 +492,7 @@ $amenityIcons = [
                                             <p class="text-xs text-gray-400">{{ __('hotel.per_night') }}</p>
                                         </div>
                                         @if($room['available'])
-                                        <a href="{{ route('booking.details',$hotel->id) }}?check_in={{ $checkIn }}&check_out={{ $checkOut }}&adults={{ $adults }}&rooms=1&children=0" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition block text-center">{{ __('hotel.reserve') }}</a>
+                                        <a href="{{ route('booking.details',$hotel->id) }}?check_in={{ $checkIn }}&check_out={{ $checkOut }}&adults={{ $adults }}&rooms=1&children=0&price_override={{ $room['price'] }}" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition block text-center">{{ __('hotel.reserve') }}</a>
                                         @else
                                         <button disabled class="mt-3 bg-gray-200 text-gray-400 text-sm font-semibold px-4 py-2 rounded-xl cursor-not-allowed block w-full">{{ __('hotel.not_available') }}</button>
                                         @endif
@@ -643,7 +643,7 @@ $amenityIcons = [
                     @endif
                 </div>
                 <div class="p-5">
-                    <form action="{{ route('booking.details',$hotel->id) }}" method="GET" class="space-y-3">
+                    <form id="bookingForm" action="{{ route('booking.details',$hotel->id) }}" method="GET" class="space-y-3">
                         <div class="grid grid-cols-2 gap-2">
                             <div class="border border-gray-200 rounded-xl p-3">
                                 <p class="text-xs text-gray-400 mb-1">{{ __('booking.check_in') }}</p><input type="date" name="check_in" value="{{ $checkIn }}" class="text-sm font-semibold text-gray-800 outline-none w-full bg-transparent">
@@ -658,7 +658,7 @@ $amenityIcons = [
                                 @for($g=1;$g<=$hotel->max_guests_per_room;$g++)<option value="{{ $g }}" {{ $adults==$g?'selected':'' }}>{{ $g }} người lớn</option>@endfor
                             </select>
                         </div>
-                        <div class="bg-gray-50 rounded-xl p-3 space-y-2">
+                        <div id="priceSummary" class="bg-gray-50 rounded-xl p-3 space-y-2">
                             <div class="flex justify-between text-sm"><span class="text-gray-500">{{ $currency->formatPrice($hotel->price_per_night) }} × {{ $nights }} {{ __('search.nights_label') }}</span><span class="font-medium">{{ $currency->formatPrice($totalPrice) }}</span></div>
                             <div class="flex justify-between text-sm"><span class="text-gray-500">{{ __('hotel.taxes_fees') }}</span><span class="font-medium">{{ $currency->formatPrice($totalPrice*0.1) }}</span></div>
                             <div class="border-t border-gray-200 pt-2 flex justify-between"><span class="font-bold text-gray-900">{{ __('hotel.total') }}</span><span class="font-bold text-gray-900">{{ $currency->formatPrice($totalPrice*1.1) }}</span></div>
@@ -730,7 +730,7 @@ $amenityIcons = [
             card.style.display = (type === 'all' || card.dataset.room === type) ? '' : 'none';
         });
     }
-    const photos = @json($jsPhotos);
+    const photos = JSON.parse('{!! json_encode($jsPhotos) !!}');
     let currentPhoto = 0;
 
     function openGallery(idx) {
@@ -765,9 +765,9 @@ $amenityIcons = [
         if (e.key === 'ArrowRight') nextPhoto();
     });
     document.addEventListener('DOMContentLoaded', function() {
-        const hotelLat = @json($jsLat),
-            hotelLng = @json($jsLng),
-            hotelName = @json($jsName);
+        const hotelLat = JSON.parse('{!! json_encode($jsLat) !!}');
+        const hotelLng = JSON.parse('{!! json_encode($jsLng) !!}');
+        const hotelName = JSON.parse('{!! json_encode($jsName) !!}');
         if (hotelLat && hotelLng) {
             const map = L.map('hotelMap', {
                 zoomControl: true,
@@ -788,5 +788,109 @@ $amenityIcons = [
             document.getElementById('hotelMap').innerHTML = '<div class="h-full bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 text-sm">{{ __("hotel.map_unavailable") }}</div>';
         }
     });
+    // ===== BOOKING WIDGET REALTIME PRICE =====
+    (function() {
+
+        const form = document.getElementById('bookingForm');
+        if (!form) return;
+
+        const BASE_PRICE = Number("{{ $hotel->price_per_night }}");
+
+        const ciInput = form.querySelector('input[name="check_in"]');
+        const coInput = form.querySelector('input[name="check_out"]');
+        const adultsInput = form.querySelector('select[name="adults"]');
+        const APP_LOCALE = "{{ app()->getLocale() }}";
+        const USD_VND_RATE = "{{ $currency->getUsdToVndRate() }}";
+
+        const summary = document.getElementById('priceSummary');
+
+        function fmt(usdAmount) {
+
+            if (APP_LOCALE === 'vi') {
+
+                const vnd = usdAmount * USD_VND_RATE;
+
+                return new Intl.NumberFormat(
+                    'vi-VN'
+                ).format(vnd) + ' ₫';
+            }
+
+            return '$' + new Intl.NumberFormat(
+                'en-US'
+            ).format(usdAmount);
+        }
+
+        function recalc() {
+
+            const ci = ciInput.value;
+            const co = coInput.value;
+
+            if (!ci || !co) return;
+
+            const nights = Math.max(
+                1,
+                Math.round(
+                    (new Date(co) - new Date(ci)) / 86400000
+                )
+            );
+
+            const roomTotal = BASE_PRICE * nights;
+            const taxes = roomTotal * 0.1;
+            const grand = roomTotal + taxes;
+
+            const rows = summary.querySelectorAll(
+                '.flex.justify-between'
+            );
+
+            if (rows.length >= 2) {
+
+                rows[0].children[0].textContent =
+                    fmt(BASE_PRICE) + ' × ' + nights + ' đêm';
+
+                rows[0].children[1].textContent =
+                    fmt(roomTotal);
+
+                rows[1].children[1].textContent =
+                    fmt(taxes);
+            }
+
+            const totalRow = summary.querySelector(
+                '.border-t'
+            );
+
+            if (totalRow) {
+                totalRow.querySelectorAll('span')[1]
+                    .textContent = fmt(grand);
+            }
+
+            const nextDay = new Date(ci);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            coInput.min =
+                nextDay.toISOString().split('T')[0];
+        }
+
+        ciInput.addEventListener('change', function() {
+
+            if (coInput.value <= this.value) {
+
+                const next = new Date(this.value);
+
+                next.setDate(next.getDate() + 1);
+
+                coInput.value =
+                    next.toISOString().split('T')[0];
+            }
+
+            recalc();
+        });
+
+        coInput.addEventListener('change', recalc);
+
+        adultsInput.addEventListener('change', recalc);
+
+        recalc();
+
+    })();
 </script>
 @endpush

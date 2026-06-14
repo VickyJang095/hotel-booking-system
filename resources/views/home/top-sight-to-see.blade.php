@@ -1,5 +1,5 @@
 <!-- Du lịch nhiều hơn, chi tiêu ít hơn -->
-<section class="max-w-7xl mx-auto px-4 pt-16 scroll-animate fade-up">
+<section class="max-w-7xl mx-auto px-4 pt-16 scroll-animate fade-up z-[-1000]">
     <h2 class="text-[35px] font-bold mb-6">{{ __('home.travel_more_spend_less') }}</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

@@ -101,102 +101,104 @@
 </style>
 
 <script>
-    const emailInput  = document.getElementById('emailInput');
-    const continueBtn = document.getElementById('continueBtn');
-    const verifyBtn   = document.getElementById('verifyBtn');
-    const otpInputs   = document.querySelectorAll('.otp-input');
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailInput = document.getElementById('emailInput');
+        const continueBtn = document.getElementById('continueBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const otpInputs = document.querySelectorAll('.otp-input');
 
-    // ── Enable/disable Continue button ──────────────────────
-    emailInput.addEventListener('input', function() {
-        const len = emailInput.value.length;
-        if (len >= 8 && len <= 64) {
-            continueBtn.disabled = false;
-            continueBtn.className = 'mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700';
-        } else {
-            continueBtn.disabled = true;
-            continueBtn.className = 'mt-4 w-full cursor-not-allowed rounded-lg bg-gray-200 py-2 text-sm font-semibold text-gray-400';
-        }
-    });
+        if (!emailInput || !continueBtn) return; // guard an toàn
 
-    // ── Send OTP ─────────────────────────────────────────────
-    continueBtn.addEventListener('click', async () => {
-        const email = emailInput.value;
-
-        await fetch('/auth/send-code', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ email })
+        emailInput.addEventListener('input', function() {
+            const len = emailInput.value.length;
+            if (len >= 8 && len <= 64) {
+                continueBtn.disabled = false;
+                continueBtn.className = 'mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700';
+            } else {
+                continueBtn.disabled = true;
+                continueBtn.className = 'mt-4 w-full cursor-not-allowed rounded-lg bg-gray-200 py-2 text-sm font-semibold text-gray-400';
+            }
         });
 
-        document.getElementById('step-email').classList.add('hidden');
-        document.getElementById('step-verify').classList.remove('hidden');
-        document.getElementById('backBtn').classList.remove('hidden');
-        document.getElementById('emailText').innerText = email;
-    });
+        continueBtn.addEventListener('click', async () => {
+            const email = emailInput.value;
+            await fetch('/auth/send-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    email
+                })
+            });
+            document.getElementById('step-email').classList.add('hidden');
+            document.getElementById('step-verify').classList.remove('hidden');
+            document.getElementById('backBtn').classList.remove('hidden');
+            document.getElementById('emailText').innerText = email;
+        });
 
-    // ── Back button ──────────────────────────────────────────
-    document.getElementById('backBtn').addEventListener('click', () => {
-        document.getElementById('step-email').classList.remove('hidden');
-        document.getElementById('step-verify').classList.add('hidden');
-        document.getElementById('backBtn').classList.add('hidden');
-    });
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('step-email').classList.remove('hidden');
+            document.getElementById('step-verify').classList.add('hidden');
+            document.getElementById('backBtn').classList.add('hidden');
+        });
 
-    // ── OTP input auto-focus + enable Verify ─────────────────
-    otpInputs.forEach((input, index) => {
-        input.addEventListener('input', () => {
-            if (input.value && otpInputs[index + 1]) {
-                otpInputs[index + 1].focus();
-            }
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value && otpInputs[index + 1]) {
+                    otpInputs[index + 1].focus();
+                }
+                const code = [...otpInputs].map(i => i.value).join('');
+                if (code.length === 4) {
+                    verifyBtn.disabled = false;
+                    verifyBtn.className = 'm-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700';
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && otpInputs[index - 1]) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        verifyBtn.addEventListener('click', async () => {
             const code = [...otpInputs].map(i => i.value).join('');
-            if (code.length === 4) {
+            const email = emailInput.value;
+            const t = document.getElementById('auth-trans').dataset;
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = t.verifying;
+
+            const response = await fetch('/auth/verify-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    email,
+                    code
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert(data.message || t.invalid);
                 verifyBtn.disabled = false;
-                verifyBtn.className = 'm-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700';
+                verifyBtn.textContent = t.verify;
             }
         });
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && otpInputs[index - 1]) {
-                otpInputs[index - 1].focus();
-            }
-        });
-    });
-
-    // ── Verify OTP ─────────────────────────────────────────
-    verifyBtn.addEventListener('click', async () => {
-        const code  = [...otpInputs].map(i => i.value).join('');
-        const email = emailInput.value;
-        const t     = document.getElementById('auth-trans').dataset;
-
-        verifyBtn.disabled = true;
-        verifyBtn.textContent = t.verifying;
-
-        const response = await fetch('/auth/verify-code', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ email, code })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            window.location.href = data.redirect_url;
-        } else {
-            alert(data.message || t.invalid);
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = t.verify;
-        }
     });
 
     function editEmail() {
         document.getElementById('step-email').classList.remove('hidden');
         document.getElementById('step-verify').classList.add('hidden');
         document.getElementById('backBtn').classList.add('hidden');
-        otpInputs.forEach(i => i.value = '');
+        document.querySelectorAll('.otp-input').forEach(i => i.value = '');
     }
 </script>

@@ -1,4 +1,4 @@
-<section class="max-w-7xl mx-auto px-6 py-2 font-roboto scroll-animate fade-up">
+<section class="max-w-7xl mx-auto px-6 py-2 font-roboto scroll-animate fade-up z-[-1000] relative">
     <h2 class="text-[35px] font-bold text-gray-900 mb-6">
         {{ __('home.trending_destinations') }}
     </h2>

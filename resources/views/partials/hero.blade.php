@@ -55,13 +55,31 @@
                     <div class="flex space-x-3 pt-3">
 
                         {{-- Location --}}
-                        <div class="pr-12 border-r border-gray-400">
+                        <div class="pr-12 border-r border-gray-400 relative">
                             <label class="block text-[18px] font-semibold text-gray-700 text-start px-4">
                                 {{ __('home.search_location_label') }}
                             </label>
-                            <input name="location" type="text" id="location"
+                            {{-- hidden input submit giá trị normalize --}}
+                            <input type="hidden" name="location" id="homeLocationNormalized">
+                            <input type="text" id="homeLocationInput" autocomplete="off"
                                 placeholder="{{ __('home.search_location') }}"
-                                class="w-full text-[16px] px-4 py-3 border-none text-gray-500">
+                                class="w-full text-[16px] px-4 py-3 border-none text-gray-500 outline-none bg-transparent">
+
+                            {{-- Dropdown --}}
+                            <div id="homeLocationSuggestions"
+                                class="hidden absolute top-full left-0 mt-1 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-[9999] overflow-hidden">
+                                <div id="homePopularList"></div>
+                                <div id="homeSearchList" class="hidden"></div>
+                                <div id="homeLocationLoading" class="hidden px-4 py-4 text-center">
+                                    <div class="inline-flex items-center gap-2 text-sm text-gray-400">
+                                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                        </svg>
+                                        ({{ __('home.loading') }})
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {{-- Check In --}}
@@ -195,7 +213,7 @@
     });
 
     document.querySelector('form').addEventListener('submit', function(e) {
-        const location = document.getElementById('location').value.trim();
+        const location = document.getElementById('homeLocationNormalized    ').value.trim();
         const checkin = document.getElementById('checkin').value;
         const checkout = document.getElementById('checkout').value;
         if (!location || !checkin || !checkout) {
@@ -208,4 +226,253 @@
             alert(trans.checkoutAfter);
         }
     });
+    // ===== HOME LOCATION AUTOCOMPLETE =====
+    (function() {
+        const input = document.getElementById('homeLocationInput');
+        const norm = document.getElementById('homeLocationNormalized');
+        const dropdown = document.getElementById('homeLocationSuggestions');
+        const popularEl = document.getElementById('homePopularList');
+        const searchEl = document.getElementById('homeSearchList');
+        const loadingEl = document.getElementById('homeLocationLoading');
+        if (!input) return;
+
+        let timer = null;
+
+        // ── Normalize tiếng Việt ──
+        function nvi(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+        }
+
+        function viMatch(text, q) {
+            return nvi(text).includes(nvi(q)) || text.toLowerCase().includes(q.toLowerCase());
+        }
+
+        function syncNorm(val) {
+            norm.value = nvi(val);
+        }
+
+        const POP = [{
+                name: 'Hà Nội',
+                sub: 'Thủ đô Việt Nam'
+            },
+            {
+                name: 'Hồ Chí Minh',
+                sub: 'Thành phố sôi động nhất'
+            },
+            {
+                name: 'Đà Nẵng',
+                sub: 'Thành phố biển miền Trung'
+            },
+            {
+                name: 'Hội An',
+                sub: 'Phố cổ UNESCO'
+            },
+            {
+                name: 'Phú Quốc',
+                sub: 'Đảo ngọc Việt Nam'
+            },
+            {
+                name: 'Nha Trang',
+                sub: 'Thiên đường biển xanh'
+            },
+            {
+                name: 'Sapa',
+                sub: 'Ruộng bậc thang & sương mù'
+            },
+            {
+                name: 'Huế',
+                sub: 'Cố đô lịch sử'
+            },
+            {
+                name: 'Hạ Long',
+                sub: 'Kỳ quan thiên nhiên thế giới'
+            },
+            {
+                name: 'Đà Lạt',
+                sub: 'Thành phố ngàn hoa'
+            },
+        ];
+
+        // ── Render popular list ──
+        function renderPopular(items, rawQ) {
+            let html = `<p class="text-xs font-semibold text-gray-400 uppercase tracking-wide px-4 pt-3 pb-1">
+            ${rawQ ? 'Gợi ý' : 'Điểm đến nổi bật'}
+        </p>`;
+            items.forEach(p => {
+                const hi = rawQ ? hlMatch(p.name, rawQ) : p.name;
+                html += `
+            <div class="popular-item flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition border-b border-gray-50 last:border-0" data-name="${p.name}">
+                <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-gray-900 truncate">${hi}</p>
+                    <p class="text-xs text-gray-400">${p.sub}</p>
+                </div>
+                <svg class="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>`;
+            });
+            popularEl.innerHTML = html;
+            popularEl.querySelectorAll('.popular-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    input.value = this.dataset.name;
+                    syncNorm(this.dataset.name);
+                    dropdown.classList.add('hidden');
+                    // Không submit ngay — để user điền tiếp ngày/khách
+                    input.closest('form')?.querySelector('input[name="check_in"]')?.focus();
+                });
+            });
+            popularEl.classList.remove('hidden');
+        }
+
+        // ── Highlight match ──
+        function hlMatch(text, q) {
+            const nt = nvi(text),
+                nq = nvi(q),
+                idx = nt.indexOf(nq);
+            if (idx === -1) return text;
+            const chars = [...text];
+            let ni = 0,
+                s = -1,
+                e = -1;
+            for (let i = 0; i < chars.length; i++) {
+                const nc = nvi(chars[i]);
+                if (ni === idx) s = i;
+                if (ni === idx + nq.length) {
+                    e = i;
+                    break;
+                }
+                ni += nc.length;
+            }
+            if (e === -1) e = chars.length;
+            return text.slice(0, s) + `<span class="text-blue-600">${text.slice(s,e)}</span>` + text.slice(e);
+        }
+
+        // ── Events ──
+        input.addEventListener('focus', function() {
+            if (!this.value.trim()) {
+                renderPopular(POP, '');
+                searchEl.classList.add('hidden');
+                loadingEl.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+            }
+        });
+
+        input.addEventListener('input', function() {
+            const raw = this.value.trim();
+            syncNorm(raw);
+            if (!raw) {
+                renderPopular(POP, '');
+                searchEl.classList.add('hidden');
+                loadingEl.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+                return;
+            }
+            const matched = POP.filter(p => viMatch(p.name, raw) || viMatch(p.sub, raw));
+            if (matched.length) {
+                renderPopular(matched, raw);
+                searchEl.classList.add('hidden');
+                loadingEl.classList.add('hidden');
+                dropdown.classList.remove('hidden');
+            } else {
+                popularEl.classList.add('hidden');
+            }
+            clearTimeout(timer);
+            timer = setTimeout(() => searchNominatim(raw), 350);
+        });
+
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Escape') dropdown.classList.add('hidden');
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.closest('div').contains(e.target)) dropdown.classList.add('hidden');
+        });
+
+        // ── Nominatim (có dấu + không dấu) ──
+        async function searchNominatim(raw) {
+            const queries = [...new Set([raw, nvi(raw)])];
+            popularEl.classList.add('hidden');
+            searchEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            dropdown.classList.remove('hidden');
+            try {
+                const results = await Promise.all(queries.map(q =>
+                    fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
+                        q,
+                        format: 'json',
+                        addressdetails: 1,
+                        limit: 5,
+                        countrycodes: 'vn',
+                        'accept-language': 'vi'
+                    }), {
+                        headers: {
+                            'Accept-Language': 'vi'
+                        }
+                    }).then(r => r.json())
+                ));
+                const seen = new Set();
+                const merged = results.flat().filter(p => {
+                    if (seen.has(p.place_id)) return false;
+                    seen.add(p.place_id);
+                    return true;
+                }).slice(0, 7);
+                loadingEl.classList.add('hidden');
+                renderResults(merged);
+            } catch (err) {
+                loadingEl.classList.add('hidden');
+                searchEl.innerHTML = `<p class="px-4 py-3 text-sm text-gray-400 text-center">Không tìm thấy kết quả</p>`;
+                searchEl.classList.remove('hidden');
+            }
+        }
+
+        function renderResults(data) {
+            searchEl.innerHTML = '';
+            if (!data.length) {
+                searchEl.innerHTML = `
+            <div class="px-4 py-5 text-center">
+                <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <p class="text-sm text-gray-400">Không tìm thấy địa điểm</p>
+            </div>`;
+                searchEl.classList.remove('hidden');
+                return;
+            }
+            data.forEach(place => {
+                const addr = place.address || {};
+                const main = addr.city || addr.town || addr.village || addr.county || place.display_name.split(',')[0];
+                const sec = [addr.state, addr.country].filter(Boolean).join(', ');
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition border-b border-gray-50 last:border-0';
+                item.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-gray-900 truncate">${main}</p>
+                    <p class="text-xs text-gray-400 truncate">${sec}</p>
+                </div>
+                <svg class="w-3.5 h-3.5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>`;
+                item.addEventListener('click', () => {
+                    input.value = main;
+                    syncNorm(main);
+                    dropdown.classList.add('hidden');
+                    // Focus sang field tiếp theo thay vì submit ngay
+                    input.closest('form')?.querySelector('input[name="check_in"]')?.focus();
+                });
+                searchEl.appendChild(item);
+            });
+            searchEl.classList.remove('hidden');
+        }
+    })();
 </script>
